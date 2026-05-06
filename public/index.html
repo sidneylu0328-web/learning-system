@@ -6,357 +6,340 @@
   <title>Sidney's Learning System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Week color palette ── */
     :root {
-      --bg: #0d0f14;
-      --card: rgba(255,255,255,0.04);
-      --card-border: rgba(255,255,255,0.09);
-      --text: #f0f0f0;
-      --muted: rgba(255,255,255,0.4);
-      --w1: #a855f7; --w1d: #7c3aed;
-      --w2: #f97316; --w2d: #ea580c;
-      --w3: #10b981; --w3d: #059669;
-      --w4: #38bdf8; --w4d: #0284c7;
-      --w5: #fbbf24; --w5d: #d97706;
-      --accent: var(--w1);
-      --accent-dark: var(--w1d);
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --text: #1d1d1f;
+      --secondary: #6e6e73;
+      --tertiary: #aeaeb2;
+      --border: #e5e5ea;
+      --accent: #6366f1;
+      --accent-light: #ede9fe;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+      --radius: 16px;
+      --radius-sm: 10px;
     }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       padding: 0 0 120px;
-      overflow-x: hidden;
-    }
-
-    /* ── Animated BG ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(168,85,247,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(56,189,248,0.08) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container {
-      max-width: 700px;
+      max-width: 680px;
       margin: 0 auto;
       padding: 0 20px;
-      position: relative;
-      z-index: 1;
     }
 
     /* ── Header ── */
     .header {
       text-align: center;
-      padding: 48px 0 32px;
+      padding: 56px 0 36px;
     }
-    .header-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
+    .header-eyebrow {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 16px;
+      color: var(--accent);
+      margin-bottom: 12px;
+      transition: color 0.4s;
     }
     .header-title {
-      font-family: 'Fraunces', serif;
-      font-style: italic;
-      font-size: clamp(28px, 6vw, 44px);
-      font-weight: 300;
-      background: linear-gradient(135deg, #f0f0f0 0%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 10px;
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
       line-height: 1.15;
-      transition: background 0.5s ease;
+      margin-bottom: 10px;
     }
     .header-sub {
-      font-size: 14px;
-      color: var(--muted);
-      font-weight: 300;
+      font-size: 15px;
+      color: var(--secondary);
+      font-weight: 400;
     }
 
-    /* ── Progress dots ── */
-    .progress-track {
+    /* ── Progress bar ── */
+    .progress-row {
       display: flex;
-      gap: 5px;
-      justify-content: center;
-      flex-wrap: wrap;
-      padding: 0 10px 28px;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
     }
-    .pdot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1.5px solid transparent;
+    .progress-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
     }
-    .pdot.done { background: var(--accent); opacity: 0.9; }
-    .pdot.current {
+    .progress-bar-fill {
+      height: 100%;
       background: var(--accent);
-      border-color: rgba(255,255,255,0.5);
-      box-shadow: 0 0 8px var(--accent);
-      transform: scale(1.3);
+      border-radius: 99px;
+      transition: width 0.5s ease, background 0.4s;
     }
-    .pdot:hover { transform: scale(1.4); opacity: 1; }
+    .progress-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--secondary);
+      white-space: nowrap;
+    }
 
     /* ── Top row ── */
     .top-row {
       display: flex;
+      gap: 12px;
       align-items: stretch;
-      gap: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     /* ── Streak ── */
     .streak-box {
-      flex-shrink: 0;
       background: var(--card);
-      border: 1.5px solid var(--card-border);
-      border-radius: 16px;
-      padding: 16px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      padding: 16px 18px;
       text-align: center;
-      position: relative;
-      overflow: hidden;
-      min-width: 88px;
+      min-width: 86px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
     }
-    .streak-box::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(251,191,36,0.08), transparent);
-      pointer-events: none;
-    }
-    .streak-fire {
-      font-size: 26px;
-      line-height: 1;
-      display: block;
-      margin-bottom: 4px;
-    }
+    .streak-fire { font-size: 22px; line-height: 1; }
     .streak-number {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 800;
-      color: #fbbf24;
-      line-height: 1;
-      display: block;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
     }
     .streak-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: rgba(251,191,36,0.6);
-      margin-top: 4px;
-      display: block;
+      color: var(--tertiary);
     }
 
     /* ── Nav area ── */
-    .nav-area { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-    .week-title {
+    .nav-area {
+      flex: 1;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .week-label {
       font-size: 12px;
       font-weight: 600;
       color: var(--accent);
-      letter-spacing: 0.02em;
       transition: color 0.4s;
     }
-    .week-emoji { margin-right: 4px; }
-
     .day-tabs {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
+      gap: 4px;
     }
     .day-tab {
-      padding: 7px 4px;
-      border: 1.5px solid var(--card-border);
+      padding: 6px 2px;
       border-radius: 8px;
-      background: var(--card);
+      background: transparent;
+      border: none;
       font-size: 10px;
       font-weight: 600;
-      color: var(--muted);
+      color: var(--secondary);
       cursor: pointer;
       text-align: center;
       transition: all 0.15s;
       position: relative;
+      font-family: inherit;
     }
-    .day-tab:hover { border-color: var(--accent); color: var(--text); }
+    .day-tab:hover { background: var(--bg); color: var(--text); }
     .day-tab.active {
       background: var(--accent);
       color: #fff;
-      border-color: var(--accent);
-      box-shadow: 0 0 12px rgba(168,85,247,0.4);
+      border-radius: 8px;
     }
     .day-tab.completed::after {
-      content: '✓';
+      content: '';
       position: absolute;
-      bottom: 1px;
-      right: 3px;
-      font-size: 7px;
-      color: var(--accent);
-      font-weight: 700;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--accent);
     }
-    .day-tab.active.completed::after { color: rgba(255,255,255,0.7); }
+    .day-tab.active.completed::after { background: rgba(255,255,255,0.6); }
 
     .week-tabs {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 5px;
+      gap: 4px;
     }
     .week-tab {
-      padding: 6px 4px;
-      border: 1.5px solid var(--card-border);
-      border-radius: 8px;
-      background: var(--card);
+      padding: 5px 2px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
       font-size: 10px;
-      font-weight: 700;
-      color: var(--muted);
+      font-weight: 600;
+      color: var(--secondary);
       cursor: pointer;
       text-align: center;
       transition: all 0.15s;
+      font-family: inherit;
     }
-    .week-tab:hover { color: var(--text); }
+    .week-tab:hover { background: var(--bg); color: var(--text); }
     .week-tab.active {
-      border-color: var(--accent);
+      background: var(--accent-light);
       color: var(--accent);
-      background: rgba(168,85,247,0.1);
     }
 
-    /* ── Main card ── */
+    /* ── Card ── */
     .main-card {
       background: var(--card);
-      border: 1.5px solid var(--card-border);
-      border-radius: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
       overflow: hidden;
-      margin-bottom: 14px;
-      position: relative;
-      backdrop-filter: blur(10px);
+      margin-bottom: 12px;
       transition: border-color 0.4s;
-    }
-    .card-accent-bar {
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-dark));
-      transition: background 0.4s;
     }
 
     /* ── Concept header ── */
     .concept-header {
-      padding: 24px 28px 22px;
-      border-bottom: 1px solid var(--card-border);
+      padding: 28px 28px 22px;
     }
-    .concept-meta {
+    .concept-top-row {
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
       margin-bottom: 14px;
     }
-    .concept-badge {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
+    .concept-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--accent);
-      border: 1.5px solid var(--accent);
-      border-radius: 6px;
-      padding: 3px 9px;
+      background: var(--accent-light);
+      border-radius: 99px;
+      padding: 4px 10px;
       transition: all 0.4s;
     }
-    .concept-day {
+    .concept-day-label {
       font-size: 12px;
-      color: var(--muted);
       font-weight: 500;
+      color: var(--tertiary);
     }
     .concept-title {
-      font-family: 'Fraunces', serif;
-      font-style: italic;
-      font-size: clamp(22px, 4vw, 32px);
-      font-weight: 300;
+      font-size: clamp(22px, 4vw, 28px);
+      font-weight: 700;
       color: var(--text);
+      letter-spacing: -0.02em;
       line-height: 1.2;
       margin-bottom: 10px;
     }
     .concept-desc {
-      font-size: 14px;
-      color: rgba(255,255,255,0.55);
+      font-size: 15px;
+      color: var(--secondary);
       line-height: 1.65;
-      font-weight: 300;
+      font-weight: 400;
     }
 
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); }
+
     /* ── Reflection ── */
-    .reflection-section {
+    .reflection-row {
       padding: 16px 28px;
-      background: rgba(168,85,247,0.05);
-      border-bottom: 1px solid var(--card-border);
-      border-left: 3px solid var(--accent);
-      transition: border-color 0.4s, background 0.4s;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
     }
-    .reflection-label {
+    .reflection-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: background 0.4s;
+    }
+    .reflection-body {}
+    .reflection-eyebrow {
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       transition: color 0.4s;
     }
     .reflection-text {
-      font-size: 13px;
-      color: rgba(255,255,255,0.6);
-      line-height: 1.65;
-      font-style: italic;
+      font-size: 14px;
+      color: var(--secondary);
+      line-height: 1.6;
     }
 
-    /* ── Steps ── */
+    /* ── Step sections ── */
     .step {
       padding: 22px 28px;
-      border-bottom: 1px solid var(--card-border);
     }
-    .step:last-child { border-bottom: none; }
-
-    .step-header {
+    .step-label-row {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 16px;
     }
-    .step-num {
-      width: 26px;
-      height: 26px;
+    .step-badge {
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: var(--accent);
       color: #fff;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       transition: background 0.4s;
-      box-shadow: 0 0 10px rgba(168,85,247,0.4);
     }
-    .step-label {
-      font-size: 11px;
+    .step-title {
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--secondary);
     }
-    .step-label span { color: var(--text); }
+    .step-title span { color: var(--text); }
 
     /* ── Resource link ── */
     .resource-link {
@@ -364,24 +347,22 @@
       align-items: center;
       gap: 12px;
       text-decoration: none;
-      background: rgba(255,255,255,0.04);
-      border: 1.5px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px 16px;
+      margin-bottom: 14px;
       transition: all 0.2s;
-      group: true;
     }
     .resource-link:hover {
       border-color: var(--accent);
-      background: rgba(168,85,247,0.08);
-      transform: translateX(3px);
+      background: var(--accent-light);
     }
     .resource-icon {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      background: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -389,219 +370,216 @@
       transition: background 0.4s;
     }
     .resource-text { flex: 1; min-width: 0; }
-    .resource-title-text {
+    .resource-name {
       font-size: 13px;
       font-weight: 600;
       color: var(--text);
-      display: block;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      display: block;
     }
-    .resource-source {
+    .resource-source-label {
       font-size: 11px;
-      color: var(--muted);
+      color: var(--tertiary);
       margin-top: 2px;
       display: block;
     }
-    .resource-arrow {
-      color: var(--muted);
+    .resource-chevron {
+      color: var(--tertiary);
       flex-shrink: 0;
       transition: transform 0.2s, color 0.2s;
     }
-    .resource-link:hover .resource-arrow {
-      transform: translateX(3px);
-      color: var(--accent);
-    }
+    .resource-link:hover .resource-chevron { transform: translateX(2px); color: var(--accent); }
 
     /* ── Checkbox ── */
-    .checkbox-row {
+    .check-label {
       display: flex;
       align-items: center;
       gap: 10px;
       cursor: pointer;
       user-select: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1.5px solid var(--card-border);
-      background: rgba(255,255,255,0.02);
-      transition: all 0.2s;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      transition: all 0.15s;
     }
-    .checkbox-row:hover { border-color: var(--accent); background: rgba(168,85,247,0.05); }
-    .checkbox-row input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
+    .check-label:hover { border-color: var(--accent); background: var(--accent-light); }
+    .check-label input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
       accent-color: var(--accent);
       cursor: pointer;
       flex-shrink: 0;
     }
-    .checkbox-label {
-      font-size: 13px;
-      color: rgba(255,255,255,0.7);
+    .check-label-text {
+      font-size: 14px;
       font-weight: 500;
+      color: var(--text);
     }
 
     /* ── Step 2 locked ── */
-    .step-2-locked { opacity: 0.3; pointer-events: none; }
+    .step-locked { opacity: 0.35; pointer-events: none; }
 
-    /* ── Textarea ── */
+    /* ── Prompt + textarea ── */
     .prompt-text {
       font-size: 14px;
-      color: rgba(255,255,255,0.6);
+      color: var(--secondary);
       line-height: 1.7;
       margin-bottom: 14px;
-      font-style: italic;
-      font-weight: 300;
     }
     textarea {
       width: 100%;
-      min-height: 150px;
-      border: 1.5px solid var(--card-border);
-      border-radius: 12px;
+      min-height: 148px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
       padding: 14px 16px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
+      font-family: inherit;
+      font-size: 15px;
       line-height: 1.65;
       color: var(--text);
-      background: rgba(255,255,255,0.03);
+      background: var(--bg);
       resize: vertical;
-      transition: border-color 0.15s;
       outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
-    textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(168,85,247,0.12); }
-    textarea::placeholder { color: rgba(255,255,255,0.2); }
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+      background: #fff;
+    }
+    textarea::placeholder { color: var(--tertiary); }
 
-    .word-count-row {
+    .meta-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-top: 8px;
       margin-bottom: 14px;
     }
-    .char-count-text {
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .word-goal {
-      font-size: 11px;
-      color: var(--muted);
-    }
+    .word-count { font-size: 12px; color: var(--tertiary); }
+    .word-goal { font-size: 12px; color: var(--tertiary); }
 
     /* ── Buttons ── */
-    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 11px 22px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 700;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
-      border: 1.5px solid transparent;
-      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+      border: none;
+      font-family: inherit;
+      letter-spacing: -0.01em;
     }
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      background: var(--accent);
       color: #fff;
-      border-color: transparent;
-      box-shadow: 0 4px 15px rgba(168,85,247,0.35);
-      transition: all 0.4s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      transition: background 0.4s, transform 0.15s, box-shadow 0.15s;
     }
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(168,85,247,0.5);
-    }
+    .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
     .btn-primary:active { transform: translateY(0); }
-    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-    .btn-ghost {
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.7);
-      border-color: var(--card-border);
-    }
-    .btn-ghost:hover {
-      background: rgba(255,255,255,0.09);
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+    .btn-secondary {
+      background: var(--bg);
       color: var(--text);
-      border-color: rgba(255,255,255,0.2);
+      border: 1.5px solid var(--border);
     }
+    .btn-secondary:hover { background: var(--border); border-color: #c7c7cc; }
 
     /* ── Feedback ── */
     .feedback-box {
-      margin-top: 16px;
-      background: rgba(168,85,247,0.06);
-      border: 1.5px solid rgba(168,85,247,0.25);
-      border-radius: 14px;
+      margin-top: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
       padding: 18px 20px;
-      animation: fadeIn 0.4s ease;
-      transition: all 0.4s;
+      animation: slideUp 0.3s ease;
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .feedback-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    @keyframes slideUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .feedback-eyebrow {
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       transition: color 0.4s;
     }
-    .feedback-header::before { content: '✦'; font-size: 12px; }
-    .feedback-text {
+    .feedback-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      transition: background 0.4s;
+    }
+    .feedback-body {
       font-size: 14px;
       line-height: 1.75;
-      color: rgba(255,255,255,0.75);
+      color: var(--secondary);
       white-space: pre-wrap;
     }
-    .feedback-text strong { color: var(--text); font-weight: 700; }
+    .feedback-body strong { color: var(--text); font-weight: 600; }
 
     /* ── Complete banner ── */
     .complete-banner {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px 20px;
-      background: rgba(16,185,129,0.1);
-      border: 1.5px solid rgba(16,185,129,0.3);
-      border-radius: 14px;
-      margin-bottom: 14px;
+      gap: 10px;
+      padding: 13px 18px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
       font-size: 14px;
-      color: #10b981;
       font-weight: 600;
-      animation: fadeIn 0.4s ease;
+      color: #16a34a;
+      animation: slideUp 0.3s ease;
     }
 
-    /* ── Nav ── */
+    /* ── Navigation ── */
     .nav-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
     .nav-btn {
-      padding: 11px 24px;
-      border: 1.5px solid var(--card-border);
-      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
       background: var(--card);
-      font-size: 13px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      font-size: 14px;
       font-weight: 600;
-      color: rgba(255,255,255,0.7);
+      color: var(--text);
       cursor: pointer;
       transition: all 0.15s;
-      font-family: 'Inter', sans-serif;
+      font-family: inherit;
     }
-    .nav-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(168,85,247,0.08); }
-    .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-    .nav-btn:disabled:hover { border-color: var(--card-border); color: rgba(255,255,255,0.7); background: var(--card); }
+    .nav-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-btn:disabled:hover { border-color: var(--border); color: var(--text); background: var(--card); }
     .nav-center {
-      font-size: 11px;
-      color: var(--muted);
-      text-align: center;
+      font-size: 12px;
       font-weight: 500;
-      line-height: 1.4;
+      color: var(--secondary);
+      text-align: center;
+      line-height: 1.5;
     }
 
     /* ── Footer ── */
@@ -609,15 +587,14 @@
       text-align: center;
       margin-top: 40px;
       font-size: 12px;
-      color: rgba(255,255,255,0.2);
-      font-style: italic;
+      color: var(--tertiary);
     }
 
     /* ── Spinner ── */
     .spinner {
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid rgba(255,255,255,0.4);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
@@ -628,40 +605,42 @@
     /* ── Confetti ── */
     .confetti-piece {
       position: fixed;
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
       animation: confettiFall 2s ease-in forwards;
       pointer-events: none;
       z-index: 9999;
     }
     @keyframes confettiFall {
       0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+      100% { transform: translateY(100vh) rotate(540deg); opacity: 0; }
     }
 
     @media (max-width: 520px) {
-      body { padding-bottom: 80px; }
-      .concept-header, .step { padding: 18px 20px; }
-      .reflection-section { padding: 14px 20px; }
-      .top-row { gap: 10px; }
-      .header { padding: 32px 0 24px; }
+      .concept-header, .step { padding: 20px 20px; }
+      .reflection-row { padding: 14px 20px; }
+      .header { padding: 36px 0 28px; }
     }
   </style>
 </head>
 <body>
 
 <div class="container">
+
+  <!-- Header -->
   <div class="header">
-    <p class="header-label">✦ Sidney's Learning System ✦</p>
-    <h1 class="header-title" id="header-title">Read → Explain → Get Feedback</h1>
-    <p class="header-sub">Daily practice with built-in evaluation · 35 concepts</p>
+    <p class="header-eyebrow" id="header-eyebrow">Sidney's Learning System</p>
+    <h1 class="header-title">Read. Explain. Get Feedback.</h1>
+    <p class="header-sub">35 concepts · Daily practice · Built-in evaluation</p>
   </div>
 
-  <!-- 35-dot progress tracker -->
-  <div class="progress-track" id="progress-track"></div>
+  <!-- Progress bar -->
+  <div class="progress-row">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <span class="progress-label" id="progress-label">0 / 35</span>
+  </div>
 
-  <!-- Streak + Nav -->
+  <!-- Streak + Navigation -->
   <div class="top-row">
     <div class="streak-box">
       <span class="streak-fire">🔥</span>
@@ -669,117 +648,123 @@
       <span class="streak-label">Streak</span>
     </div>
     <div class="nav-area">
-      <div class="week-title" id="week-title"></div>
+      <div class="week-label" id="week-label"></div>
       <div class="day-tabs" id="day-tabs"></div>
       <div class="week-tabs" id="week-tabs"></div>
     </div>
   </div>
 
-  <!-- Complete banner -->
+  <!-- Completion banner -->
   <div id="complete-banner" class="complete-banner" style="display:none">
-    🎉 Day complete — great work, Sid!
+    <span>✓</span> Day complete — great work, Sid!
   </div>
 
   <!-- Main card -->
-  <div class="main-card" id="main-card">
-    <div class="card-accent-bar" id="accent-bar"></div>
+  <div class="main-card">
 
     <!-- Concept header -->
     <div class="concept-header">
-      <div class="concept-meta">
-        <span class="concept-badge" id="concept-badge">Concept</span>
-        <span class="concept-day" id="day-label">Day 1 of 35</span>
+      <div class="concept-top-row">
+        <span class="concept-pill" id="concept-pill">Concept</span>
+        <span class="concept-day-label" id="day-label">Day 1 of 35</span>
       </div>
       <div class="concept-title" id="concept-title"></div>
       <div class="concept-desc" id="concept-desc"></div>
     </div>
 
+    <div class="divider"></div>
+
     <!-- Reflection -->
-    <div class="reflection-section" id="reflection-section">
-      <div class="reflection-label" id="reflection-label">💭 Before You Read</div>
-      <div class="reflection-text" id="reflection-text"></div>
+    <div class="reflection-row">
+      <div class="reflection-icon" id="reflection-icon">💭</div>
+      <div class="reflection-body">
+        <div class="reflection-eyebrow" id="reflection-eyebrow">Before You Read</div>
+        <div class="reflection-text" id="reflection-text"></div>
+      </div>
     </div>
 
-    <!-- Step 1: Read -->
+    <div class="divider"></div>
+
+    <!-- Step 1 -->
     <div class="step">
-      <div class="step-header">
-        <div class="step-num" id="step1-num">1</div>
-        <div class="step-label">Step 1 · <span>Read</span></div>
+      <div class="step-label-row">
+        <div class="step-badge">1</div>
+        <div class="step-title">Step 1 · <span>Read</span></div>
       </div>
       <a id="resource-link" href="#" target="_blank" rel="noopener noreferrer" class="resource-link">
         <div class="resource-icon" id="resource-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
             <polyline points="15 3 21 3 21 9"/>
             <line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
         </div>
         <div class="resource-text">
-          <span class="resource-title-text" id="resource-title"></span>
-          <span class="resource-source" id="resource-source"></span>
+          <span class="resource-name" id="resource-title"></span>
+          <span class="resource-source-label" id="resource-source"></span>
         </div>
-        <svg class="resource-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        <svg class="resource-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
         </svg>
       </a>
-      <label class="checkbox-row">
+      <label class="check-label">
         <input type="checkbox" id="read-check" />
-        <span class="checkbox-label">✓ Mark as read to unlock writing</span>
+        <span class="check-label-text">Mark as read to unlock writing</span>
       </label>
     </div>
 
-    <!-- Step 2: Write -->
+    <div class="divider"></div>
+
+    <!-- Step 2 -->
     <div class="step" id="step-2">
-      <div class="step-header">
-        <div class="step-num" id="step2-num">2</div>
-        <div class="step-label">Step 2 · <span>Explain It</span></div>
+      <div class="step-label-row">
+        <div class="step-badge">2</div>
+        <div class="step-title">Step 2 · <span>Explain It</span></div>
       </div>
       <p class="prompt-text" id="write-prompt"></p>
       <textarea id="explanation" placeholder="Write your explanation here — in your own words, as if teaching a smart friend..."></textarea>
-      <div class="word-count-row">
-        <span class="char-count-text"><span id="char-count">0</span> words written</span>
+      <div class="meta-row">
+        <span class="word-count"><span id="char-count">0</span> words</span>
         <span class="word-goal">Aim for 80+ words</span>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="feedback-btn" onclick="getFeedback()">
-          ✦ Get AI Feedback
-        </button>
-        <button class="btn btn-ghost" id="save-btn" onclick="saveExplanation()">
-          Save
-        </button>
+        <button class="btn btn-primary" id="feedback-btn" onclick="getFeedback()">Get Feedback</button>
+        <button class="btn btn-secondary" id="save-btn" onclick="saveExplanation()">Save</button>
       </div>
       <div id="feedback-box" class="feedback-box" style="display:none">
-        <div class="feedback-header" id="feedback-header">AI Feedback</div>
-        <div class="feedback-text" id="feedback-text"></div>
+        <div class="feedback-eyebrow">AI Feedback</div>
+        <div class="feedback-body" id="feedback-text"></div>
       </div>
     </div>
+
   </div>
 
-  <!-- Navigation -->
+  <!-- Nav buttons -->
   <div class="nav-row">
-    <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">← Prev</button>
+    <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Previous
+    </button>
     <div class="nav-center" id="nav-center"></div>
-    <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next →</button>
+    <button class="nav-btn" id="next-btn" onclick="navigate(1)">
+      Next
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6" transform="rotate(180 12 12)"/></svg>
+    </button>
   </div>
 
-  <div class="footer">Progress saves to your browser automatically · Your writing persists across visits</div>
+  <div class="footer">Progress saves automatically to your browser · Your writing persists across visits</div>
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-// WEEK COLORS
-// ─────────────────────────────────────────────
-const WEEK_COLORS = [
-  { accent: '#a855f7', dark: '#7c3aed', bg: 'rgba(168,85,247,', emoji: '🧠' },
-  { accent: '#f97316', dark: '#ea580c', bg: 'rgba(249,115,22,', emoji: '🪞' },
-  { accent: '#10b981', dark: '#059669', bg: 'rgba(16,185,129,', emoji: '📊' },
-  { accent: '#38bdf8', dark: '#0284c7', bg: 'rgba(56,189,248,', emoji: '💬' },
-  { accent: '#fbbf24', dark: '#d97706', bg: 'rgba(251,191,36,', emoji: '🌐' },
+// ── Week themes (muted, Apple-system style) ──
+const WEEK_THEMES = [
+  { accent: '#6366f1', light: '#ede9fe', emoji: '🧠', name: 'Mental Models' },
+  { accent: '#f59e0b', light: '#fef3c7', emoji: '🪞', name: 'Psychology' },
+  { accent: '#10b981', light: '#d1fae5', emoji: '📊', name: 'Economics' },
+  { accent: '#3b82f6', light: '#dbeafe', emoji: '💬', name: 'Communication' },
+  { accent: '#8b5cf6', light: '#ede9fe', emoji: '🌐', name: 'Systems' },
 ]
 
-// ─────────────────────────────────────────────
-// CURRICULUM
-// ─────────────────────────────────────────────
 const WEEKS = [
   { title: 'Mental Models & Clear Thinking', days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
   { title: 'Psychology & Human Behavior',    days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
@@ -789,51 +774,44 @@ const WEEKS = [
 ]
 
 const CONCEPTS = [
-  // ── Week 1: Mental Models ──
-  { title: 'First Principles Thinking', desc: 'Breaking a problem down to its most fundamental truths and building up from there, rather than reasoning by analogy.', resource: { title: 'First Principles: The Building Blocks of True Knowledge', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/first-principles/' }, prompt: "Explain first principles thinking as if teaching it to a smart friend who's never heard of it. Give a real-world example of when you would use it.", reflection: "Think of a belief you hold strongly. Have you actually examined whether it's true from the ground up — or did you inherit it from someone else?" },
-  { title: 'Second-Order Thinking', desc: 'Thinking beyond the immediate effect to consider downstream consequences — asking "and then what?" repeatedly.', resource: { title: 'Second-Order Thinking: What Smart People Use to Outperform', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/second-order-thinking/' }, prompt: 'Explain second-order thinking and contrast it with first-order thinking. Give an example where ignoring second-order effects caused a problem.', reflection: "Think of a recent decision you made. What were the second and third-order consequences you didn't fully consider?" },
-  { title: 'Inversion', desc: 'Approaching problems backwards — instead of asking "how do I succeed?", ask "what would guarantee failure?" and avoid those things.', resource: { title: 'Inversion: The Crucial Thinking Skill Nobody Ever Taught You', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/inversion/' }, prompt: "Explain the mental model of inversion and why thinking backwards is often more powerful than thinking forwards.", reflection: "Name one goal you're working toward. What are 3 things that, if you did them, would almost guarantee you fail?" },
-  { title: "Occam's Razor", desc: 'When choosing between competing explanations, the simplest one — with the fewest assumptions — is usually correct.', resource: { title: "Occam's Razor: A Skim-Saving Principle", source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/occams-razor/' }, prompt: "Explain Occam's Razor. When does it apply well, and when can it mislead you?", reflection: 'When was the last time you overcomplicated an explanation for something that actually had a simple cause?' },
-  { title: 'The Map Is Not the Territory', desc: 'Our mental models of the world are simplifications, not reality itself. The map is useful but always leaves things out.', resource: { title: 'The Map Is Not the Territory', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/map-and-territory/' }, prompt: 'Explain this concept and give an example of a "map" you use (a belief, a model) that might be misleading you.', reflection: "What's one area of your life where you might be confusing your model of reality with reality itself?" },
-  { title: 'Circle of Competence', desc: "Everyone has a domain where knowledge is deep. Most mistakes come from acting outside that circle without knowing it.", resource: { title: 'Circle of Competence: An Introduction', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/circle-of-competence/' }, prompt: "Explain the circle of competence. What does it look like when someone operates inside it vs. outside it?", reflection: "Where is your circle of genuine competence? Where do you often act as if you're inside it when you're not?" },
-  { title: "Hanlon's Razor", desc: "Never attribute to malice what can be adequately explained by incompetence, ignorance, or carelessness.", resource: { title: "Hanlon's Razor: Avoid Paranoia and Stupidity", source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/mental-model-hanlons-razor/' }, prompt: "Explain Hanlon's Razor. How does it change how you interpret other people's behavior?", reflection: 'Think of a time you assumed someone had bad intentions. In hindsight, was it more likely they were just careless?' },
-  // ── Week 2: Psychology ──
-  { title: 'The Anchoring Effect', desc: 'The first number or piece of information we encounter has a disproportionate influence on every judgment we make afterward.', resource: { title: 'Anchoring Bias: Why Initial Information Shapes Every Decision', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/anchoring-bias' }, prompt: 'Explain the anchoring effect, how it works in the brain, and give two examples: one in everyday life and one in negotiation.', reflection: "When's the last time a first impression or first number shaped your entire judgment — even after you got more information?" },
-  { title: 'Confirmation Bias', desc: 'Our tendency to search for and favor information that confirms what we already believe — and ignore contradicting evidence.', resource: { title: 'You Are Not So Smart: Confirmation Bias', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/confirmation-bias/' }, prompt: 'Explain confirmation bias and describe a specific area of your own thinking where it might be operating right now.', reflection: "Name a belief you've held for years. When did you last seriously seek out evidence that challenges it?" },
-  { title: 'The Dunning-Kruger Effect', desc: 'People with limited knowledge overestimate their competence. Confidence drops as knowledge grows — then rises again with genuine mastery.', resource: { title: "The Dunning-Kruger Effect: Why the Incompetent Don't Know It", source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/basics/dunning-kruger-effect' }, prompt: 'Explain the Dunning-Kruger Effect and its four stages. Where on the curve do you currently sit in your main domains?', reflection: "What's one area where you've moved from 'peak of Mount Stupid' to realizing how much you didn't know?" },
-  { title: 'Loss Aversion', desc: 'Losses feel roughly twice as painful as equivalent gains feel good. This drives irrational decisions in almost every area of life.', resource: { title: 'Loss Aversion: Why Losses Loom Larger Than Gains', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/loss-aversion' }, prompt: "Explain loss aversion and how it's different from risk aversion. Give an investing example where it leads people astray.", reflection: "Have you ever held on to something — a position, a bad investment — longer than you should because you couldn't bear the loss?" },
-  { title: 'Social Proof', desc: "When uncertain, we look to other people's behavior as evidence of what's correct. The more people doing something, the more valid it seems.", resource: { title: 'Social Proof: Why We Look to Others', source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/basics/social-proof' }, prompt: 'Explain social proof, including both when it serves us well and when it leads to terrible decisions.', reflection: "Where in your life are you currently following the crowd without independently evaluating whether it's right for you?" },
-  { title: 'The Halo Effect', desc: "One positive trait causes us to assume many other positive traits — even without evidence.", resource: { title: 'The Halo Effect: Why First Impressions Color Everything', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/halo-effect' }, prompt: 'Explain the halo effect and its flip side (the horn effect). Give an example of each in business or everyday judgment.', reflection: "Think of someone you respect greatly. Are you extending their credibility from one area into domains where they haven't earned it?" },
-  { title: 'Cognitive Dissonance', desc: "The discomfort of holding two conflicting beliefs — and the creative ways we resolve it.", resource: { title: 'Cognitive Dissonance: Theory & Examples', source: 'Simply Psychology', url: 'https://www.simplypsychology.org/cognitive-dissonance.html' }, prompt: 'Explain cognitive dissonance and the main strategies people use to resolve it. Which do you use most?', reflection: "Where in your life are you acting in a way that contradicts something you believe? How are you explaining it to yourself?" },
-  // ── Week 3: Economics ──
-  { title: 'Opportunity Cost', desc: "Every choice has a cost — not just what you spend, but the value of the next best alternative you give up.", resource: { title: 'Opportunity Cost: A Core Mental Model', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/opportunity-cost/' }, prompt: "Explain opportunity cost and why most people dramatically underestimate it. Give an example where the 'free' option wasn't free.", reflection: "What are you spending significant time on right now? What is the best alternative use of that time you're giving up?" },
-  { title: 'The Sunk Cost Fallacy', desc: "Continuing to invest in something because of resources already spent — rather than evaluating future prospects on their own merits.", resource: { title: "The Sunk Cost Fallacy: Why You Can't Let Go", source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/the-sunk-cost-fallacy' }, prompt: "Explain the sunk cost fallacy. Why do we fall for it even when we know better? Give a personal or professional example.", reflection: "What are you still doing — a project, habit, relationship — partly because of what you've already put in rather than its current value?" },
-  { title: 'Supply & Demand', desc: "Price is determined by the intersection of how much is available and how much people want. Everything in economics builds on this.", resource: { title: 'Law of Supply and Demand', source: 'Investopedia', url: 'https://www.investopedia.com/terms/l/law-of-supply-demand.asp' }, prompt: 'Explain supply and demand clearly. What happens to price when supply increases, demand increases, and when both shift at once?', reflection: "Where does supply and demand apply to your own value in your career — and what can you do about it?" },
-  { title: 'Incentives Shape Everything', desc: "Show me the incentive and I'll show you the outcome. Understanding incentives is usually sufficient to predict behavior.", resource: { title: 'The Psychology of Human Misjudgment: Incentives', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/the-psychology-of-human-misjudgment/' }, prompt: 'Explain why incentives are one of the most powerful forces shaping human behavior. Give an example of misaligned incentives.', reflection: "Look at a situation that frustrates you. What are their actual incentives? Are they really aligned with what you want?" },
-  { title: 'The Power of Compounding', desc: "Small, consistent growth accelerates over time as returns build on returns. What starts imperceptible becomes overwhelming.", resource: { title: 'Compound Interest: The Most Powerful Force', source: 'Investopedia', url: 'https://www.investopedia.com/terms/c/compounding.asp' }, prompt: 'Explain compounding beyond finance — apply it to skills, knowledge, or reputation. Why do most people underestimate it?', reflection: "What small habit, practiced consistently for 5 years, would make the biggest difference to your life?" },
-  { title: 'Expected Value', desc: "The value of a bet multiplied by its probability. Good decisions maximize expected value — not certainty.", resource: { title: 'Expected Value: Making Good Decisions Under Uncertainty', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/expected-value/' }, prompt: "Explain expected value thinking. Why can a 'bad outcome' still result from a 'good decision'? Give an example.", reflection: "Think of a decision where fear of a bad outcome is stopping you from taking a bet with genuinely positive expected value." },
-  { title: 'Margin of Safety', desc: "Building a buffer between your estimates and reality. Never operate at the edge of what's possible — your estimates are almost certainly wrong.", resource: { title: 'Margin of Safety: Why Great Investors Build Buffers', source: 'Investopedia', url: 'https://www.investopedia.com/terms/m/marginofsafety.asp' }, prompt: 'Explain margin of safety and show how it applies both to investing and to everyday planning and decision-making.', reflection: "Where in your life are you operating with too little buffer — where one unexpected thing could cascade into serious problems?" },
-  // ── Week 4: Communication ──
-  { title: 'The Feynman Technique', desc: "You don't truly understand something until you can explain it simply. The gaps in your explanation reveal the gaps in your understanding.", resource: { title: 'The Feynman Technique: How to Learn Anything Fast', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/feynman-learning-technique/' }, prompt: 'Explain the Feynman Technique step by step. Then apply it: explain one concept from this course in the simplest possible terms.', reflection: "What's a topic you think you understand but have never tried to explain to someone else from scratch?" },
-  { title: 'The Pyramid Principle', desc: "Start with the answer, then give arguments, then evidence. Most people do the opposite — and lose their audience.", resource: { title: 'The Pyramid Principle: How to Communicate Like McKinsey', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/pyramid-principle/' }, prompt: "Explain the pyramid principle and contrast it with how most people naturally structure communication. When is bottom-up appropriate?", reflection: "In your last important email or presentation, did you lead with the answer or bury it?" },
-  { title: 'The Curse of Knowledge', desc: "Once you know something deeply, you can't remember what it was like not to know it — making explanation very hard.", resource: { title: 'The Curse of Knowledge: Why Experts Are Often Bad Communicators', source: 'Harvard Business Review', url: 'https://hbr.org/2006/12/the-curse-of-knowledge' }, prompt: 'Explain the curse of knowledge and how it causes miscommunication. What tactics help you overcome it?', reflection: "Think of something you're expert in. Where do you tend to lose your audience? What do you assume they already know?" },
-  { title: 'Ethos, Pathos, Logos', desc: "Aristotle's three modes of persuasion: credibility, emotional appeal, and logic. Great communicators use all three.", resource: { title: 'Ethos, Pathos, and Logos: The Three Pillars of Persuasion', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/ethos-logos-pathos/' }, prompt: 'Explain ethos, pathos, and logos. Give an example of a communication that uses all three effectively.', reflection: "When you try to persuade people, which of the three do you lean on most? Which do you neglect?" },
-  { title: 'Active Listening', desc: "Most people listen with the intent to reply, not to understand. True listening means suspending your own agenda.", resource: { title: 'Active Listening: The Master Key to Effective Communication', source: 'MindTools', url: 'https://www.mindtools.com/az4wxv7/active-listening' }, prompt: "Explain what active listening actually looks like in practice — not just 'be quiet while they talk.' What are the hardest parts?", reflection: "In your last important conversation, how much of the time were you thinking about what you'd say next while they were talking?" },
-  { title: 'The Framing Effect', desc: "The same information, presented differently, leads to completely different decisions. How you frame things matters as much as what you say.", resource: { title: 'Framing Effect: How Context Shapes Our Choices', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/framing-effect' }, prompt: 'Explain the framing effect and give two examples where the same facts, framed differently, would lead to opposite decisions.', reflection: "Are you framing things to make them easier to say yes to — or defaulting to lazy framing?" },
-  { title: 'Storytelling Structure', desc: "Stories follow predictable structures that make information stick. The most compelling ones create tension and show transformation.", resource: { title: 'The Clues to a Great Story (Andrew Stanton, TED)', source: 'TED Talks', url: 'https://www.ted.com/talks/andrew_stanton_the_clues_to_a_great_story' }, prompt: 'Explain the core elements of a compelling story structure. How do you apply it to non-fiction communication like a presentation?', reflection: "Think of a time you had to explain something complex. What would the story version of your last big communication have looked like?" },
-  // ── Week 5: Systems ──
-  { title: 'Systems Thinking', desc: "The world is made of interconnected systems. Understanding feedback, delays, and non-linear effects separates systemic from linear thinkers.", resource: { title: 'Introduction to Systems Thinking', source: 'The Systems Thinker', url: 'https://thesystemsthinker.com/introduction-to-systems-thinking/' }, prompt: 'Explain systems thinking and contrast it with linear cause-and-effect thinking. Give an example where systems lens reveals something linear thinking misses.', reflection: "Think of a problem you're trying to solve. What are the feedback loops — what are you inadvertently reinforcing?" },
-  { title: 'Feedback Loops', desc: "Reinforcing loops amplify change. Balancing loops resist it. Most complexity in the world comes from these two types interacting.", resource: { title: 'Thinking in Systems: Feedback Loops Explained', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/feedback-loops/' }, prompt: 'Explain the difference between reinforcing and balancing feedback loops. Give a real-world example of each type.', reflection: "Where in your life do you see a reinforcing loop working for you — and one working against you?" },
-  { title: 'Network Effects', desc: "A product becomes more valuable as more people use it. This creates winner-take-all dynamics and explains platform dominance.", resource: { title: 'The Network Effects Manual: 16 Types', source: 'NFX', url: 'https://www.nfx.com/post/network-effects-manual' }, prompt: 'Explain network effects and why they create such powerful competitive moats. Give an example of a business with strong network effects.', reflection: "Which communities or platforms you participate in have real network effects — and which would collapse if people started leaving?" },
-  { title: 'The Lindy Effect', desc: "The longer something non-perishable has existed, the longer it is likely to continue to exist. Age is a proxy for robustness.", resource: { title: 'The Lindy Effect: Predicting Future Life Expectancy', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/lindy-effect/' }, prompt: 'Explain the Lindy Effect and what it means for evaluating ideas, technologies, and institutions.', reflection: "What 'new' thing are you paying a lot of attention to? How does it compare to ideas that have survived for decades?" },
-  { title: 'Stoicism in Practice', desc: "You can't control what happens — only how you respond. The practice is distinguishing what is and isn't in your control.", resource: { title: 'Stoicism 101: The Ancient Philosophy for Modern Life', source: 'Daily Stoic', url: 'https://dailystoic.com/stoicism-101-ancient-philosophy-every-modern-man-needs/' }, prompt: 'Explain the core principles of Stoicism and how you would apply them to a current challenge in your life.', reflection: "What is something you're spending mental energy worrying about right now that is completely outside your control?" },
-  { title: 'Bayesian Thinking', desc: "Start with a prior belief, observe evidence, update proportionally. Rational belief change is about updating — not flipping — your views.", resource: { title: 'Bayesian Thinking: Updating Your Beliefs Rationally', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/thomas-bayes-and-bayesian-thinking/' }, prompt: 'Explain Bayesian thinking in plain English. How is it different from how most people change their beliefs?', reflection: "Think of a belief you hold strongly. What evidence would actually change your mind?" },
-  { title: 'Compounding Knowledge', desc: "What you learn this year becomes the foundation for next year. The rate of learning compounds — making early investment pay off exponentially.", resource: { title: 'The Great Mental Models: Why Learning to Think Matters', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/mental-models/' }, prompt: 'Explain why knowledge compounds and how the structure of your learning determines how fast it grows.', reflection: "Looking back at this 35-day program: which concepts have started connecting in your thinking? What do you want to explore more deeply?" },
+  { title: 'First Principles Thinking', desc: 'Breaking a problem down to its most fundamental truths and rebuilding from there, rather than reasoning by analogy.', resource: { title: 'First Principles: The Building Blocks of True Knowledge', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/first-principles/' }, prompt: "Explain first principles thinking as if teaching a smart friend who's never heard of it. Give a real-world example.", reflection: "Think of a belief you hold strongly. Have you examined whether it's true from the ground up — or did you inherit it?" },
+  { title: 'Second-Order Thinking', desc: 'Thinking beyond the immediate effect to consider downstream consequences — asking "and then what?" repeatedly.', resource: { title: 'Second-Order Thinking: What Smart People Use to Outperform', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/second-order-thinking/' }, prompt: 'Explain second-order thinking and contrast it with first-order thinking. Give an example where ignoring second-order effects caused a problem.', reflection: "Think of a recent decision. What were the second and third-order consequences you didn't fully consider?" },
+  { title: 'Inversion', desc: 'Approaching problems backwards — instead of asking "how do I succeed?", ask "what would guarantee failure?" and avoid those things.', resource: { title: 'Inversion: The Crucial Thinking Skill Nobody Taught You', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/inversion/' }, prompt: 'Explain inversion and why thinking backwards is often more powerful than thinking forwards.', reflection: "Name one goal you're working toward. What 3 things would almost guarantee you fail?" },
+  { title: "Occam's Razor", desc: 'When choosing between competing explanations, the simplest one — with fewest assumptions — is usually correct.', resource: { title: "Occam's Razor: A Skim-Saving Principle", source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/occams-razor/' }, prompt: "Explain Occam's Razor. When does it apply well, and when can it mislead you?", reflection: 'When did you last overcomplicate an explanation for something with a simple cause?' },
+  { title: 'The Map Is Not the Territory', desc: 'Our mental models are simplifications, not reality itself. The map is useful but always leaves things out.', resource: { title: 'The Map Is Not the Territory', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/map-and-territory/' }, prompt: 'Explain this concept and give an example of a "map" (belief or model) that might be misleading you.', reflection: "Where might you be confusing your model of reality with reality itself?" },
+  { title: 'Circle of Competence', desc: "Everyone has a domain of deep knowledge. Most mistakes come from acting outside that circle without knowing it.", resource: { title: 'Circle of Competence: An Introduction', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/circle-of-competence/' }, prompt: "Explain the circle of competence. What does operating inside vs. outside it look like?", reflection: "Where is your genuine circle of competence? Where do you act as if you're inside it when you're not?" },
+  { title: "Hanlon's Razor", desc: "Never attribute to malice what can be adequately explained by incompetence or carelessness.", resource: { title: "Hanlon's Razor: Avoid Paranoia and Stupidity", source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/mental-model-hanlons-razor/' }, prompt: "Explain Hanlon's Razor and how it changes how you interpret other people's behavior.", reflection: 'Think of a time you assumed bad intentions. Was it more likely carelessness?' },
+  { title: 'The Anchoring Effect', desc: 'The first number or piece of information we encounter disproportionately influences every judgment we make afterward.', resource: { title: 'Anchoring Bias: Why Initial Information Shapes Every Decision', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/anchoring-bias' }, prompt: 'Explain the anchoring effect and give two examples: one everyday, one in negotiation.', reflection: "When did a first impression shape your entire judgment — even after you got more information?" },
+  { title: 'Confirmation Bias', desc: 'Our tendency to seek out and favor information that confirms existing beliefs, ignoring contradicting evidence.', resource: { title: 'You Are Not So Smart: Confirmation Bias', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/confirmation-bias/' }, prompt: 'Explain confirmation bias and describe an area of your own thinking where it might be operating.', reflection: "Name a belief you've held for years. When did you last seek evidence that challenges it?" },
+  { title: 'The Dunning-Kruger Effect', desc: 'People with limited knowledge overestimate their competence. Confidence drops as knowledge grows, then rises with genuine mastery.', resource: { title: "The Dunning-Kruger Effect", source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/basics/dunning-kruger-effect' }, prompt: 'Explain the Dunning-Kruger Effect and its stages. Where do you currently sit in your main domains?', reflection: "Where have you moved from 'peak of Mount Stupid' to realizing how much you didn't know?" },
+  { title: 'Loss Aversion', desc: 'Losses feel roughly twice as painful as equivalent gains feel good — driving irrational decisions everywhere.', resource: { title: 'Loss Aversion: Why Losses Loom Larger Than Gains', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/loss-aversion' }, prompt: "Explain loss aversion vs. risk aversion. Give an investing example where it leads people astray.", reflection: "Have you held on to something longer than you should because you couldn't bear to lose what you put in?" },
+  { title: 'Social Proof', desc: "When uncertain, we look to others' behavior as evidence of what's correct. The more people doing something, the more valid it seems.", resource: { title: 'Social Proof: Why We Look to Others', source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/basics/social-proof' }, prompt: 'Explain social proof — when it serves us well and when it leads to terrible decisions.', reflection: "Where are you following the crowd without independently evaluating whether it's right for you?" },
+  { title: 'The Halo Effect', desc: "One positive trait causes us to assume many others — without evidence.", resource: { title: 'The Halo Effect: Why First Impressions Color Everything', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/halo-effect' }, prompt: 'Explain the halo effect and its flip side (the horn effect). Give an example of each.', reflection: "Are you extending someone's credibility from one area into domains where they haven't earned it?" },
+  { title: 'Cognitive Dissonance', desc: "The discomfort of holding two conflicting beliefs — and the creative ways we resolve it.", resource: { title: 'Cognitive Dissonance: Theory & Examples', source: 'Simply Psychology', url: 'https://www.simplypsychology.org/cognitive-dissonance.html' }, prompt: 'Explain cognitive dissonance and the main strategies people use to resolve it. Which do you use most?', reflection: "Where are you acting in a way that contradicts something you believe? How are you explaining it?" },
+  { title: 'Opportunity Cost', desc: "Every choice costs not just what you spend, but the value of the best alternative you give up.", resource: { title: 'Opportunity Cost: A Core Mental Model', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/opportunity-cost/' }, prompt: "Explain opportunity cost and why most people underestimate it. Give an example where the 'free' option wasn't free.", reflection: "What are you spending significant time on? What's the best alternative use you're giving up?" },
+  { title: 'The Sunk Cost Fallacy', desc: "Continuing to invest because of resources already spent — rather than evaluating future prospects on their own merits.", resource: { title: "The Sunk Cost Fallacy: Why You Can't Let Go", source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/the-sunk-cost-fallacy' }, prompt: "Explain the sunk cost fallacy. Why do we fall for it even when we know better?", reflection: "What are you still doing partly because of what you've already put in rather than its current value?" },
+  { title: 'Supply & Demand', desc: "Price is determined by the intersection of availability and desire. Everything in economics builds on this.", resource: { title: 'Law of Supply and Demand', source: 'Investopedia', url: 'https://www.investopedia.com/terms/l/law-of-supply-demand.asp' }, prompt: 'Explain supply and demand. What happens to price when supply increases, demand increases, and when both shift?', reflection: "How does supply and demand apply to your own value in your career?" },
+  { title: 'Incentives Shape Everything', desc: "Show me the incentive and I'll show you the outcome. Incentives are usually sufficient to predict behavior.", resource: { title: 'The Psychology of Human Misjudgment: Incentives', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/the-psychology-of-human-misjudgment/' }, prompt: 'Explain why incentives are so powerful. Give an example of misaligned incentives causing a bad outcome.', reflection: "Look at a frustrating situation. What are their actual incentives — are they really aligned with what you want?" },
+  { title: 'The Power of Compounding', desc: "Small, consistent growth accelerates over time. What starts imperceptible becomes overwhelming — in money, skills, and knowledge.", resource: { title: 'Compound Interest: The Most Powerful Force', source: 'Investopedia', url: 'https://www.investopedia.com/terms/c/compounding.asp' }, prompt: 'Explain compounding beyond finance — apply it to skills or knowledge. Why do most people underestimate it?', reflection: "What small habit, practiced consistently for 5 years, would make the biggest difference to your life?" },
+  { title: 'Expected Value', desc: "Good decisions maximize expected value, not certainty — being right about the odds matters more than any single outcome.", resource: { title: 'Expected Value: Making Good Decisions Under Uncertainty', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/expected-value/' }, prompt: "Explain expected value thinking. Why can a 'bad outcome' still result from a 'good decision'?", reflection: "Where is fear of a bad outcome stopping you from taking a bet with genuinely positive expected value?" },
+  { title: 'Margin of Safety', desc: "Build a buffer between your estimates and reality. Your estimates are almost certainly wrong.", resource: { title: 'Margin of Safety: Why Great Investors Build Buffers', source: 'Investopedia', url: 'https://www.investopedia.com/terms/m/marginofsafety.asp' }, prompt: 'Explain margin of safety in both investing and everyday planning.', reflection: "Where are you operating with too little buffer — where one unexpected thing could cascade?" },
+  { title: 'The Feynman Technique', desc: "You don't truly understand something until you can explain it simply. Gaps in your explanation reveal gaps in understanding.", resource: { title: 'The Feynman Technique: How to Learn Anything Fast', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/feynman-learning-technique/' }, prompt: 'Explain the Feynman Technique step by step. Then apply it to one concept from this course.', reflection: "What's a topic you think you understand but have never tried explaining from scratch?" },
+  { title: 'The Pyramid Principle', desc: "Start with the answer, then arguments, then evidence. Most people do the opposite — and lose their audience.", resource: { title: 'The Pyramid Principle: Communicate Like McKinsey', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/pyramid-principle/' }, prompt: "Explain the pyramid principle and contrast it with how most people structure communication.", reflection: "In your last important email, did you lead with the answer or bury it?" },
+  { title: 'The Curse of Knowledge', desc: "Once you know something deeply, you can't remember not knowing it — making clear explanation very hard.", resource: { title: 'The Curse of Knowledge: Why Experts Communicate Badly', source: 'Harvard Business Review', url: 'https://hbr.org/2006/12/the-curse-of-knowledge' }, prompt: 'Explain the curse of knowledge and what tactics help overcome it.', reflection: "Think of something you're expert in. Where do you lose your audience? What do you assume they know?" },
+  { title: 'Ethos, Pathos, Logos', desc: "Aristotle's three modes of persuasion: credibility, emotional appeal, and logic. Great communicators use all three.", resource: { title: 'Ethos, Pathos, and Logos: The Three Pillars of Persuasion', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/ethos-logos-pathos/' }, prompt: 'Explain ethos, pathos, and logos. Give an example of communication that uses all three.', reflection: "Which of the three do you lean on most when persuading? Which do you neglect?" },
+  { title: 'Active Listening', desc: "Most people listen with the intent to reply, not to understand. True listening means suspending your own agenda.", resource: { title: 'Active Listening: The Master Key to Effective Communication', source: 'MindTools', url: 'https://www.mindtools.com/az4wxv7/active-listening' }, prompt: "Explain what active listening actually looks like in practice. What are the hardest parts?", reflection: "In your last important conversation, how much were you thinking about your reply while they were talking?" },
+  { title: 'The Framing Effect', desc: "The same information, presented differently, leads to completely different decisions.", resource: { title: 'Framing Effect: How Context Shapes Our Choices', source: 'The Decision Lab', url: 'https://thedecisionlab.com/biases/framing-effect' }, prompt: 'Explain the framing effect and give two examples where the same facts lead to opposite decisions.', reflection: "Are you framing things to be easy to say yes to — or defaulting to lazy framing?" },
+  { title: 'Storytelling Structure', desc: "Stories follow predictable structures that make information stick. Great ones create tension and show transformation.", resource: { title: 'The Clues to a Great Story (Andrew Stanton, TED)', source: 'TED Talks', url: 'https://www.ted.com/talks/andrew_stanton_the_clues_to_a_great_story' }, prompt: 'Explain core story structure elements. How do you apply it to presentations or business writing?', reflection: "What would the story version of your last big communication have looked like?" },
+  { title: 'Systems Thinking', desc: "The world is interconnected systems. Understanding feedback and non-linear effects separates systemic from linear thinkers.", resource: { title: 'Introduction to Systems Thinking', source: 'The Systems Thinker', url: 'https://thesystemsthinker.com/introduction-to-systems-thinking/' }, prompt: 'Explain systems thinking vs. linear thinking. Give an example where systems lens reveals something important.', reflection: "Think of a problem you're trying to solve. What feedback loops are you inadvertently reinforcing?" },
+  { title: 'Feedback Loops', desc: "Reinforcing loops amplify change. Balancing loops resist it. Most complexity comes from these two types interacting.", resource: { title: 'Thinking in Systems: Feedback Loops Explained', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/feedback-loops/' }, prompt: 'Explain the difference between reinforcing and balancing feedback loops. Give a real-world example of each.', reflection: "Where do you see a reinforcing loop working for you — and one working against you?" },
+  { title: 'Network Effects', desc: "A product becomes more valuable as more people use it — creating winner-take-all dynamics.", resource: { title: 'The Network Effects Manual: 16 Types', source: 'NFX', url: 'https://www.nfx.com/post/network-effects-manual' }, prompt: 'Explain network effects and why they create such powerful competitive moats.', reflection: "Which communities you're in have real network effects — and which would collapse if people started leaving?" },
+  { title: 'The Lindy Effect', desc: "The longer something non-perishable has existed, the longer it's likely to continue. Age is a proxy for robustness.", resource: { title: 'The Lindy Effect: Predicting Future Life Expectancy', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/lindy-effect/' }, prompt: 'Explain the Lindy Effect and what it means for evaluating ideas, technologies, and institutions.', reflection: "What 'new' thing are you paying a lot of attention to? How does it compare to ideas that have survived decades?" },
+  { title: 'Stoicism in Practice', desc: "You can't control what happens — only how you respond. The practice: distinguish what is and isn't in your control.", resource: { title: 'Stoicism 101: The Ancient Philosophy for Modern Life', source: 'Daily Stoic', url: 'https://dailystoic.com/stoicism-101-ancient-philosophy-every-modern-man-needs/' }, prompt: 'Explain the core principles of Stoicism and how you would apply them to a current challenge.', reflection: "What are you spending mental energy worrying about that is completely outside your control?" },
+  { title: 'Bayesian Thinking', desc: "Start with a prior belief, observe evidence, update proportionally. Rational belief change means updating — not flipping.", resource: { title: 'Bayesian Thinking: Updating Your Beliefs Rationally', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/thomas-bayes-and-bayesian-thinking/' }, prompt: 'Explain Bayesian thinking in plain English. How is it different from how most people change their beliefs?', reflection: "Think of a strong belief. What evidence would actually change your mind — and are you open to it?" },
+  { title: 'Compounding Knowledge', desc: "What you learn becomes the foundation for what you can learn next. The rate of learning itself compounds over time.", resource: { title: 'The Great Mental Models: Why Learning to Think Matters', source: 'Farnam Street (fs.blog)', url: 'https://fs.blog/mental-models/' }, prompt: 'Explain why knowledge compounds and how the structure of your learning determines how fast it grows.', reflection: "Looking back at this 35-day program: which concepts have started connecting in your thinking?" },
 ]
 
-// ─────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────
+// ── State ──
 const STORE_KEY = 'sidneys_learning_v1'
 function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') } catch { return {} } }
 function saveState(s) { try { localStorage.setItem(STORE_KEY, JSON.stringify(s)) } catch {} }
@@ -844,9 +822,6 @@ if (!state.days) state.days = {}
 if (!state.streak) state.streak = 0
 if (!state.lastDate) state.lastDate = null
 
-// ─────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────
 function getTodayStr() { return new Date().toISOString().split('T')[0] }
 
 function updateStreak() {
@@ -858,60 +833,49 @@ function updateStreak() {
   saveState(state)
 }
 
-function setWeekTheme(weekIdx) {
-  const c = WEEK_COLORS[weekIdx]
-  const root = document.documentElement
-  root.style.setProperty('--accent', c.accent)
-  root.style.setProperty('--accent-dark', c.dark)
+function setTheme(weekIdx) {
+  const t = WEEK_THEMES[weekIdx]
+  const r = document.documentElement
+  r.style.setProperty('--accent', t.accent)
+  r.style.setProperty('--accent-light', t.light)
 }
 
 function confetti() {
-  const colors = ['#a855f7','#f97316','#10b981','#38bdf8','#fbbf24','#f43f5e','#fff']
-  for (let i = 0; i < 60; i++) {
+  const colors = ['#6366f1','#f59e0b','#10b981','#3b82f6','#8b5cf6','#f43f5e','#1d1d1f']
+  for (let i = 0; i < 50; i++) {
     const el = document.createElement('div')
     el.className = 'confetti-piece'
-    el.style.left = Math.random() * 100 + 'vw'
-    el.style.top = '-10px'
-    el.style.background = colors[Math.floor(Math.random() * colors.length)]
-    el.style.animationDelay = Math.random() * 1.2 + 's'
-    el.style.animationDuration = 1.5 + Math.random() * 1 + 's'
-    el.style.width = el.style.height = (6 + Math.random() * 6) + 'px'
-    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px'
+    const size = 6 + Math.random() * 5
+    el.style.cssText = `left:${Math.random()*100}vw;top:-10px;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-delay:${Math.random()*1}s;animation-duration:${1.5+Math.random()}s`
     document.body.appendChild(el)
     setTimeout(() => el.remove(), 3000)
   }
 }
 
-// ─────────────────────────────────────────────
-// RENDER
-// ─────────────────────────────────────────────
 function render() {
   const day = state.currentDay
   const weekIdx = Math.floor((day - 1) / 7)
   const dayIdx = (day - 1) % 7
   const concept = CONCEPTS[day - 1]
   const week = WEEKS[weekIdx]
-  const wc = WEEK_COLORS[weekIdx]
+  const theme = WEEK_THEMES[weekIdx]
   const dayData = state.days[day] || {}
 
-  setWeekTheme(weekIdx)
+  setTheme(weekIdx)
 
   // Streak
   document.getElementById('streak-num').textContent = state.streak
 
-  // Progress dots
-  const track = document.getElementById('progress-track')
-  track.innerHTML = ''
-  for (let i = 1; i <= 35; i++) {
-    const dot = document.createElement('div')
-    dot.className = 'pdot' + (state.days[i]?.completed ? ' done' : '') + (i === day ? ' current' : '')
-    dot.title = `Day ${i}: ${CONCEPTS[i-1].title}`
-    dot.onclick = () => { state.currentDay = i; saveState(state); render() }
-    track.appendChild(dot)
-  }
+  // Progress
+  const completed = Object.values(state.days).filter(d => d.completed).length
+  document.getElementById('progress-fill').style.width = (completed / 35 * 100) + '%'
+  document.getElementById('progress-label').textContent = `${completed} / 35`
 
-  // Week title
-  document.getElementById('week-title').innerHTML = `<span class="week-emoji">${wc.emoji}</span>Week ${weekIdx+1}: ${week.title}`
+  // Header eyebrow
+  document.getElementById('header-eyebrow').textContent = `${theme.emoji} Sidney's Learning System`
+
+  // Week label
+  document.getElementById('week-label').textContent = `${theme.emoji} Week ${weekIdx+1}: ${week.title}`
 
   // Day tabs
   const dayTabsEl = document.getElementById('day-tabs')
@@ -928,15 +892,15 @@ function render() {
   // Week tabs
   const weekTabsEl = document.getElementById('week-tabs')
   weekTabsEl.innerHTML = ''
-  WEEKS.forEach((w, wi) => {
+  WEEK_THEMES.forEach((t, wi) => {
     const btn = document.createElement('button')
     btn.className = 'week-tab' + (wi === weekIdx ? ' active' : '')
-    btn.textContent = `${WEEK_COLORS[wi].emoji} Wk ${wi+1}`
+    btn.textContent = `${t.emoji} Wk ${wi+1}`
     btn.onclick = () => { state.currentDay = wi * 7 + 1; saveState(state); render() }
     weekTabsEl.appendChild(btn)
   })
 
-  // Concept content
+  // Concept
   document.getElementById('day-label').textContent = `Day ${day} of 35`
   document.getElementById('concept-title').textContent = concept.title
   document.getElementById('concept-desc').textContent = concept.desc
@@ -948,9 +912,9 @@ function render() {
   document.getElementById('resource-source').textContent = concept.resource.source
 
   // Checkbox
-  const readCheck = document.getElementById('read-check')
-  readCheck.checked = dayData.read || false
-  updateStep2Lock(readCheck.checked)
+  const rc = document.getElementById('read-check')
+  rc.checked = dayData.read || false
+  document.getElementById('step-2').classList.toggle('step-locked', !rc.checked)
 
   // Explanation
   document.getElementById('write-prompt').textContent = concept.prompt
@@ -958,26 +922,17 @@ function render() {
   updateWordCount()
 
   // Feedback
-  const feedbackBox = document.getElementById('feedback-box')
-  if (dayData.feedback) {
-    feedbackBox.style.display = 'block'
-    renderFeedback(dayData.feedback)
-  } else {
-    feedbackBox.style.display = 'none'
-  }
+  const fb = document.getElementById('feedback-box')
+  if (dayData.feedback) { fb.style.display = 'block'; renderFeedback(dayData.feedback) }
+  else fb.style.display = 'none'
 
-  // Complete banner
-  const banner = document.getElementById('complete-banner')
-  banner.style.display = dayData.completed ? 'flex' : 'none'
+  // Banner
+  document.getElementById('complete-banner').style.display = dayData.completed ? 'flex' : 'none'
 
   // Nav
   document.getElementById('prev-btn').disabled = day <= 1
   document.getElementById('next-btn').disabled = day >= 35
-  document.getElementById('nav-center').innerHTML = `<strong style="color:var(--accent)">${wc.emoji} ${week.title}</strong><br/>Day ${day} of 35`
-}
-
-function updateStep2Lock(unlocked) {
-  document.getElementById('step-2').classList.toggle('step-2-locked', !unlocked)
+  document.getElementById('nav-center').innerHTML = `${theme.emoji} ${week.title}<br/><span style="color:var(--tertiary)">Day ${day} of 35</span>`
 }
 
 function updateWordCount() {
@@ -985,24 +940,21 @@ function updateWordCount() {
   const words = text.trim() ? text.trim().split(/\s+/).length : 0
   const el = document.getElementById('char-count')
   el.textContent = words
-  el.style.color = words >= 80 ? 'var(--accent)' : 'inherit'
+  el.style.color = words >= 80 ? 'var(--accent)' : 'var(--tertiary)'
 }
 
 function renderFeedback(text) {
-  const html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
-  document.getElementById('feedback-text').innerHTML = html
+  document.getElementById('feedback-text').innerHTML =
+    text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
 }
 
-// ─────────────────────────────────────────────
-// EVENT HANDLERS
-// ─────────────────────────────────────────────
 document.getElementById('read-check').addEventListener('change', function () {
   const day = state.currentDay
   if (!state.days[day]) state.days[day] = {}
   state.days[day].read = this.checked
   if (this.checked) updateStreak()
   saveState(state)
-  updateStep2Lock(this.checked)
+  document.getElementById('step-2').classList.toggle('step-locked', !this.checked)
 })
 
 document.getElementById('explanation').addEventListener('input', function () {
@@ -1016,20 +968,20 @@ document.getElementById('explanation').addEventListener('input', function () {
 function saveExplanation() {
   const day = state.currentDay
   if (!state.days[day]) state.days[day] = {}
-  const wasCompleted = state.days[day].completed
+  const wasNew = !state.days[day].completed
   state.days[day].explanation = document.getElementById('explanation').value
   state.days[day].completed = true
   updateStreak()
   saveState(state)
   document.getElementById('complete-banner').style.display = 'flex'
-  if (!wasCompleted) confetti()
+  if (wasNew) confetti()
   const btn = document.getElementById('save-btn')
-  const orig = btn.textContent
-  btn.textContent = '✓ Saved!'
-  setTimeout(() => { btn.textContent = orig }, 1500)
-  // Update progress dot
-  const dots = document.querySelectorAll('.pdot')
-  if (dots[day - 1]) dots[day - 1].classList.add('done')
+  btn.textContent = '✓ Saved'
+  setTimeout(() => { btn.textContent = 'Save' }, 1500)
+  // Update progress bar
+  const done = Object.values(state.days).filter(d => d.completed).length
+  document.getElementById('progress-fill').style.width = (done / 35 * 100) + '%'
+  document.getElementById('progress-label').textContent = `${done} / 35`
 }
 
 async function getFeedback() {
@@ -1055,28 +1007,28 @@ async function getFeedback() {
 
     const day = state.currentDay
     if (!state.days[day]) state.days[day] = {}
-    const wasCompleted = state.days[day].completed
+    const wasNew = !state.days[day].completed
     state.days[day].feedback = data.feedback
     state.days[day].explanation = explanation
     state.days[day].completed = true
     updateStreak()
     saveState(state)
 
-    const feedbackBox = document.getElementById('feedback-box')
-    feedbackBox.style.display = 'block'
+    const fb = document.getElementById('feedback-box')
+    fb.style.display = 'block'
     renderFeedback(data.feedback)
     document.getElementById('complete-banner').style.display = 'flex'
-    if (!wasCompleted) confetti()
-    feedbackBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    if (wasNew) confetti()
+    fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 
-    // Update progress dot
-    const dots = document.querySelectorAll('.pdot')
-    if (dots[day - 1]) dots[day - 1].classList.add('done')
+    const done = Object.values(state.days).filter(d => d.completed).length
+    document.getElementById('progress-fill').style.width = (done / 35 * 100) + '%'
+    document.getElementById('progress-label').textContent = `${done} / 35`
   } catch (err) {
     alert('Could not get feedback: ' + err.message)
   } finally {
     btn.disabled = false
-    btn.innerHTML = '✦ Get AI Feedback'
+    btn.innerHTML = 'Get Feedback'
   }
 }
 
@@ -1089,9 +1041,6 @@ function navigate(dir) {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// ─────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────
 render()
 </script>
 </body>
