@@ -12,15 +12,15 @@
 
     :root {
       --bg: #0a0a0a;
-      --surface: #111110;
-      --surface-2: #181816;
-      --border: rgba(255,255,255,0.07);
-      --border-hover: rgba(255,255,255,0.15);
-      --text: #ede8de;
-      --text-2: rgba(237,232,222,0.5);
-      --text-3: rgba(237,232,222,0.28);
-      --accent: #b8add9;
-      --accent-dim: rgba(184,173,217,0.12);
+      --surface: #141413;
+      --surface-2: #1e1e1c;
+      --border: rgba(255,255,255,0.10);
+      --border-hover: rgba(255,255,255,0.22);
+      --text: #ffffff;
+      --text-2: rgba(255,255,255,0.62);
+      --text-3: rgba(255,255,255,0.38);
+      --accent: #c4b5f0;
+      --accent-dim: rgba(196,181,240,0.14);
     }
 
     body {
@@ -692,11 +692,11 @@
 
 <script>
 const THEMES = [
-  { color:'#b8add9', dim:'rgba(184,173,217,0.1)', emoji:'🧠', label:'Mental Models' },
-  { color:'#d4a8c0', dim:'rgba(212,168,192,0.1)', emoji:'🪞', label:'Psychology' },
-  { color:'#a0c4aa', dim:'rgba(160,196,170,0.1)', emoji:'📊', label:'Economics' },
-  { color:'#9abcd4', dim:'rgba(154,188,212,0.1)', emoji:'💬', label:'Communication' },
-  { color:'#c4b49c', dim:'rgba(196,180,156,0.1)', emoji:'🌐', label:'Systems' },
+  { color:'#c4b5f0', dim:'rgba(196,181,240,0.14)', emoji:'🧠', label:'Mental Models' },
+  { color:'#f0a0c8', dim:'rgba(240,160,200,0.14)', emoji:'🪞', label:'Psychology' },
+  { color:'#6ed4a0', dim:'rgba(110,212,160,0.14)', emoji:'📊', label:'Economics' },
+  { color:'#6ab8f0', dim:'rgba(106,184,240,0.14)', emoji:'💬', label:'Communication' },
+  { color:'#f0c96a', dim:'rgba(240,201,106,0.14)', emoji:'🌐', label:'Systems' },
 ]
 
 const WEEKS = [
@@ -775,7 +775,7 @@ function applyTheme(wi) {
 }
 
 function confetti() {
-  const cols = ['#b8add9','#d4a8c0','#a0c4aa','#9abcd4','#c4b49c','#ede8de','#555']
+  const cols = ['#c4b5f0','#f0a0c8','#6ed4a0','#6ab8f0','#f0c96a','#ffffff','#555']
   for(let i=0;i<45;i++){
     const e=document.createElement('div')
     e.className='cp'
