@@ -25,7 +25,11 @@ app.post('/api/feedback', async (req, res) => {
   if (!client) {
     return res.json({
       score: null,
-      feedback: "Feedback is not available — the ANTHROPIC_API_KEY environment variable is not set."
+      feedback: {
+        right: '',
+        improve: '',
+        question: '⚠️ AI feedback is not available — the ANTHROPIC_API_KEY environment variable is not set in your Railway service variables.'
+      }
     })
   }
 
@@ -59,8 +63,14 @@ Score guide: 1=barely scratched surface, 2=some basics but mostly vague, 3=solid
     let raw = message.content[0].text.trim()
     // Strip markdown code blocks if present
     raw = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/, '').trim()
-    const parsed = JSON.parse(raw)
-    res.json({ score: parsed.score, feedback: parsed })
+    let parsed
+    try {
+      parsed = JSON.parse(raw)
+    } catch (parseErr) {
+      // Claude returned non-JSON — wrap it gracefully
+      parsed = { score: null, right: '', improve: '', question: raw }
+    }
+    res.json({ score: parsed.score || null, feedback: { right: parsed.right || '', improve: parsed.improve || '', question: parsed.question || '' } })
   } catch (err) {
     console.error('Feedback error:', err.message)
     res.status(500).json({ error: 'Could not generate feedback. Try again in a moment.' })

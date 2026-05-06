@@ -1740,7 +1740,14 @@ async function getFeedback() {
 
     dd.explanation = txt
     dd.score = data.score || null
-    dd.feedback = data.feedback || { right: data.feedback, improve: '', question: '' }
+    // Normalise feedback — server may return an object or (legacy) a plain string
+    if (data.feedback && typeof data.feedback === 'object') {
+      dd.feedback = data.feedback
+    } else if (typeof data.feedback === 'string') {
+      dd.feedback = { right: '', improve: '', question: data.feedback }
+    } else {
+      dd.feedback = { right: '', improve: '', question: '' }
+    }
     dd.feedbackAt = Date.now()
 
     if (isReview) {
