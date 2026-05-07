@@ -708,6 +708,51 @@
     }
     .feedback-section-body strong { color: var(--text); font-weight: 500; }
 
+    /* ── Perfect Answer ── */
+    .perfect-answer-reveal {
+      margin-top: 12px;
+    }
+    .btn-perfect {
+      background: transparent;
+      color: var(--text-3);
+      border: 1px dashed rgba(255,255,255,0.18);
+      font-size: 12px;
+      padding: 8px 16px;
+      width: 100%;
+      justify-content: center;
+      border-radius: 10px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-perfect:hover { border-color: var(--accent); color: var(--accent); }
+    .perfect-answer-box {
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-left: 3px solid var(--accent);
+      border-radius: 12px;
+      padding: 20px 22px;
+      background: var(--surface-2);
+      animation: fadeUp 0.3s ease;
+      display: none;
+    }
+    .perfect-answer-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: color 0.5s;
+    }
+    .perfect-answer-text {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--text-2);
+    }
+
     /* ── Revision step ── */
     .revision-step {
       padding: 22px 30px;
@@ -1000,6 +1045,15 @@
           <div class="score-bar" id="score-bar-1"></div>
         </div>
         <div id="fb-sections"></div>
+      </div>
+
+      <!-- Perfect Answer reveal -->
+      <div class="perfect-answer-reveal" id="perfect-answer-reveal" style="display:none">
+        <button class="btn btn-perfect" id="perfect-btn" onclick="showPerfectAnswer()">✦ See the perfect answer</button>
+        <div class="perfect-answer-box" id="perfect-answer-box">
+          <div class="perfect-answer-label">✦ Perfect Answer</div>
+          <div class="perfect-answer-text" id="perfect-answer-text"></div>
+        </div>
       </div>
     </div>
 
@@ -1612,9 +1666,13 @@ function renderConnectionChallenge(idx, dd) {
 
 function renderFeedbackBox(dd) {
   const fb = document.getElementById('fb-box')
+  const perfectReveal = document.getElementById('perfect-answer-reveal')
+  const perfectBox = document.getElementById('perfect-answer-box')
+  const perfectBtn = document.getElementById('perfect-btn')
+  const perfectText = document.getElementById('perfect-answer-text')
+
   if (dd.feedback) {
     fb.style.display = 'block'
-    // Score
     if (dd.score) {
       document.getElementById('score-row-1').style.display = 'flex'
       document.getElementById('score-badge-1').textContent = `${dd.score} / 5`
@@ -1623,8 +1681,19 @@ function renderFeedbackBox(dd) {
       document.getElementById('score-row-1').style.display = 'none'
     }
     renderFeedbackSections(dd.feedback, 'fb-sections')
+
+    // Show perfect answer reveal
+    perfectReveal.style.display = 'block'
+    // Restore cached answer if available
+    if (dd.perfectAnswer) {
+      perfectText.innerHTML = dd.perfectAnswer.replace(/\n/g, '<br/>')
+    } else {
+      perfectBox.style.display = 'none'
+      perfectBtn.innerHTML = '✦ See the perfect answer'
+    }
   } else {
     fb.style.display = 'none'
+    perfectReveal.style.display = 'none'
   }
 }
 
@@ -1773,6 +1842,66 @@ async function getFeedback() {
   } finally {
     btn.disabled = false
     btn.innerHTML = 'Get Feedback →'
+  }
+}
+
+// ─────────────────────────────────────────────
+//  PERFECT ANSWER
+// ─────────────────────────────────────────────
+async function showPerfectAnswer() {
+  const btn = document.getElementById('perfect-btn')
+  const box = document.getElementById('perfect-answer-box')
+  const textEl = document.getElementById('perfect-answer-text')
+
+  // If already loaded, just toggle
+  if (box.style.display === 'block') {
+    box.style.display = 'none'
+    btn.innerHTML = '✦ See the perfect answer'
+    return
+  }
+
+  // If cached in state, show it
+  const dd = getDayState(S.currentDay)
+  if (dd.perfectAnswer) {
+    textEl.innerHTML = dd.perfectAnswer.replace(/\n/g, '<br/>')
+    box.style.display = 'block'
+    btn.innerHTML = '✦ Hide perfect answer'
+    return
+  }
+
+  btn.disabled = true
+  btn.innerHTML = '<span class="spin-light"></span> Generating…'
+
+  const idx = S.currentDay
+  const c = C[idx]
+  const wi = Math.floor(idx / 7)
+
+  try {
+    const r = await fetch('/api/perfect-answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        concept: c.t,
+        description: c.d,
+        prompt: c.p,
+        audience: dd.audience || AUDIENCES[idx % AUDIENCES.length],
+        week: WEEKS[wi].title,
+      })
+    })
+    const data = await r.json()
+    if (data.error) throw new Error(data.error)
+
+    dd.perfectAnswer = data.answer
+    persist(S)
+
+    textEl.innerHTML = data.answer.replace(/\n/g, '<br/>')
+    box.style.display = 'block'
+    btn.innerHTML = '✦ Hide perfect answer'
+  } catch (e) {
+    alert('Could not generate perfect answer: ' + e.message)
+    btn.innerHTML = '✦ See the perfect answer'
+  } finally {
+    btn.disabled = false
   }
 }
 

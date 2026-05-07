@@ -176,6 +176,35 @@ Keep each field to 1-2 sentences. Push him to think at the level of underlying p
   }
 })
 
+// ── Perfect Answer ────────────────────────────────────────────────────────────
+app.post('/api/perfect-answer', async (req, res) => {
+  const { concept, description, prompt, audience, week } = req.body
+
+  const client = getClient()
+  if (!client) {
+    return res.json({ answer: '⚠️ AI unavailable — ANTHROPIC_API_KEY not set.' })
+  }
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-opus-4-5',
+      max_tokens: 600,
+      messages: [{
+        role: 'user',
+        content: `Write the ideal answer to this learning prompt. Audience: "${audience}". Concept: "${concept}" — ${description}. Week: ${week}.
+
+Prompt: "${prompt}"
+
+Write a response that scores 5/5: clear, specific, uses a vivid real-world example, shows genuine depth, and is perfectly pitched to the audience. Aim for 110–150 words. No preamble — write the answer directly as Sidney would.`
+      }]
+    })
+    res.json({ answer: message.content[0].text.trim() })
+  } catch (err) {
+    console.error('Perfect answer error:', err.message)
+    res.status(500).json({ error: 'Could not generate answer. Try again.' })
+  }
+})
+
 // ── SPA fallback ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))
