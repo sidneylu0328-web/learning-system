@@ -16,20 +16,34 @@ app.use(express.static(path.join(__dirname, 'public')))
 const DATA_DIR  = path.join(__dirname, 'data')
 const PROG_FILE = path.join(DATA_DIR, 'progress.json')
 
+// In-memory cache — primary store (survives restarts, resets only on redeploy)
+let _cache = null
+
 function readProgress() {
+  // Return memory cache if already loaded
+  if (_cache !== null) return _cache
+  // Try to restore from file on first boot
   try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
-    if (!fs.existsSync(PROG_FILE)) return {}
-    return JSON.parse(fs.readFileSync(PROG_FILE, 'utf8'))
-  } catch { return {} }
+    if (fs.existsSync(PROG_FILE)) {
+      _cache = JSON.parse(fs.readFileSync(PROG_FILE, 'utf8'))
+      console.log('Progress restored from file')
+      return _cache
+    }
+  } catch (e) {
+    console.warn('Could not read progress file:', e.message)
+  }
+  _cache = {}
+  return _cache
 }
 
 function writeProgress(data) {
+  _cache = data  // always update memory immediately
+  // Best-effort file write (may fail on Railway ephemeral FS — that's OK)
   try {
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
     fs.writeFileSync(PROG_FILE, JSON.stringify(data), 'utf8')
   } catch (e) {
-    console.warn('Could not write progress file:', e.message)
+    console.warn('Could not write progress file (using memory only):', e.message)
   }
 }
 

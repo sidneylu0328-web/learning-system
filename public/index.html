@@ -1222,22 +1222,42 @@ function persist(s) {
 // Boot: load local immediately, then merge with server in background
 let S = loadLocal()
 
-// Async init: pull server state and re-render if it has more progress
+function pushToServer(state) {
+  return fetch('/api/progress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(state),
+  }).catch(() => {})
+}
+
+// Async init: two-way sync
+// 1. If local has more progress than server → push local to server
+// 2. If server has more progress than local → pull server, re-render
 async function syncFromServer() {
   try {
     const resp = await fetch('/api/progress')
     if (!resp.ok) return
     const serverState = await resp.json()
     if (!serverState || typeof serverState !== 'object') return
+
     const merged = mergeStates(S, serverState)
-    // Only re-render if anything actually changed
-    if (JSON.stringify(merged) !== JSON.stringify(S)) {
+    const serverJson = JSON.stringify(serverState)
+    const mergedJson = JSON.stringify(merged)
+    const localJson  = JSON.stringify(S)
+
+    // Server is behind — push the merged state up
+    if (mergedJson !== serverJson) {
+      pushToServer(merged)
+    }
+
+    // Local is behind — update local and re-render
+    if (mergedJson !== localJson) {
       S = merged
       saveLocal(S)
       render()
       showSyncBadge()
     }
-  } catch { /* offline or server unavailable — use local */ }
+  } catch { /* offline — use local */ }
 }
 
 function showSyncBadge() {
