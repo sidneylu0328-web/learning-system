@@ -1023,31 +1023,11 @@
         <span class="word-goal">Aim for 80+</span>
       </div>
 
-      <!-- Connection Challenge (shown when dayIndex > 0) -->
-      <div class="connection-card" id="connection-card" style="display:none">
-        <div class="connection-head">
-          <span>Connection Challenge</span>
-          <span class="connection-optional">Optional</span>
-        </div>
-        <div class="connection-q" id="connection-q"></div>
-        <textarea id="connection-answer" placeholder="What's the link? Even a rough observation is valuable…" style="min-height:72px"></textarea>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ghost" id="conn-fb-btn" onclick="getConnectionFeedback()" style="font-size:11px;padding:7px 14px">Get feedback →</button>
-        </div>
-        <div id="conn-fb-box" style="display:none;margin-top:10px">
-          <div style="font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;transition:color 0.5s">Connection Feedback</div>
-          <div id="conn-fb-text" style="font-size:13px;font-weight:300;line-height:1.75;color:var(--text-2);margin-bottom:12px"></div>
-          <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
-          <div style="font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;transition:color 0.5s">✦ Perfect Connection</div>
-          <div id="conn-perfect-text" style="font-size:13px;font-weight:300;line-height:1.75;color:var(--text-2)"></div>
-        </div>
-      </div>
-
       <div class="btns">
         <button class="btn btn-fill" id="fb-btn" onclick="getFeedback()">Get Feedback →</button>
       </div>
 
-      <!-- Feedback result -->
+      <!-- Feedback result + Perfect Answer (all in one block) -->
       <div id="fb-box" class="feedback-box" style="display:none">
         <div class="feedback-label">Feedback</div>
         <div class="score-row" id="score-row-1" style="display:none">
@@ -1055,14 +1035,32 @@
           <div class="score-bar" id="score-bar-1"></div>
         </div>
         <div id="fb-sections"></div>
-      </div>
-
-      <!-- Perfect Answer reveal -->
-      <div class="perfect-answer-reveal" id="perfect-answer-reveal" style="display:none">
+        <!-- Perfect Answer lives inside the feedback block -->
+        <div style="height:1px;background:var(--border);margin:16px 0"></div>
         <button class="btn btn-perfect" id="perfect-btn" onclick="showPerfectAnswer()">✦ See the perfect answer</button>
         <div class="perfect-answer-box" id="perfect-answer-box">
           <div class="perfect-answer-label">✦ Perfect Answer</div>
           <div class="perfect-answer-text" id="perfect-answer-text"></div>
+        </div>
+      </div>
+
+      <!-- Connection Challenge (optional — after main feedback) -->
+      <div class="connection-card" id="connection-card" style="display:none">
+        <div class="connection-head">
+          <span>Connection Challenge</span>
+          <span class="connection-optional">Optional</span>
+        </div>
+        <div class="connection-q" id="connection-q"></div>
+        <textarea id="connection-answer" placeholder="What's the link? Even a rough observation is valuable…" style="min-height:72px"></textarea>
+        <div style="margin-top:10px">
+          <button class="btn btn-ghost" id="conn-fb-btn" onclick="getConnectionFeedback()" style="font-size:11px;padding:7px 14px">Get feedback →</button>
+        </div>
+        <div id="conn-fb-box" class="feedback-box" style="display:none;margin-top:10px">
+          <div class="feedback-label">Connection Feedback</div>
+          <div id="conn-fb-text" style="font-size:13px;font-weight:300;line-height:1.75;color:var(--text-2);margin-bottom:14px"></div>
+          <div style="height:1px;background:var(--border);margin-bottom:14px"></div>
+          <div class="feedback-label">✦ Perfect Connection</div>
+          <div id="conn-perfect-text" style="font-size:13px;font-weight:300;line-height:1.75;color:var(--text-2)"></div>
         </div>
       </div>
     </div>
@@ -1684,7 +1682,6 @@ function renderConnectionChallenge(idx, dd) {
 
 function renderFeedbackBox(dd) {
   const fb = document.getElementById('fb-box')
-  const perfectReveal = document.getElementById('perfect-answer-reveal')
   const perfectBox = document.getElementById('perfect-answer-box')
   const perfectBtn = document.getElementById('perfect-btn')
   const perfectText = document.getElementById('perfect-answer-text')
@@ -1700,18 +1697,16 @@ function renderFeedbackBox(dd) {
     }
     renderFeedbackSections(dd.feedback, 'fb-sections')
 
-    // Show perfect answer reveal
-    perfectReveal.style.display = 'block'
-    // Restore cached answer if available
     if (dd.perfectAnswer) {
       perfectText.innerHTML = dd.perfectAnswer.replace(/\n/g, '<br/>')
+      perfectBox.style.display = 'block'
+      perfectBtn.innerHTML = '✦ Hide perfect answer'
     } else {
       perfectBox.style.display = 'none'
       perfectBtn.innerHTML = '✦ See the perfect answer'
     }
   } else {
     fb.style.display = 'none'
-    perfectReveal.style.display = 'none'
   }
 }
 
