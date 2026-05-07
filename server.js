@@ -1,11 +1,52 @@
 const express = require('express')
 const path = require('path')
+const fs = require('fs')
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
-app.use(express.json())
+app.use(express.json({ limit: '2mb' }))
 app.use(express.static(path.join(__dirname, 'public')))
+
+// ── Cross-device progress sync ────────────────────────────────────────────────
+// Stores progress in a JSON file so all devices (phone, laptop) share the same
+// state. Railway keeps this file alive between restarts (just not full redeploys,
+// which are rare). Falls back gracefully if the file can't be written.
+
+const DATA_DIR  = path.join(__dirname, 'data')
+const PROG_FILE = path.join(DATA_DIR, 'progress.json')
+
+function readProgress() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
+    if (!fs.existsSync(PROG_FILE)) return {}
+    return JSON.parse(fs.readFileSync(PROG_FILE, 'utf8'))
+  } catch { return {} }
+}
+
+function writeProgress(data) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
+    fs.writeFileSync(PROG_FILE, JSON.stringify(data), 'utf8')
+  } catch (e) {
+    console.warn('Could not write progress file:', e.message)
+  }
+}
+
+// GET  /api/progress  → return saved state object
+app.get('/api/progress', (req, res) => {
+  res.json(readProgress())
+})
+
+// POST /api/progress  → body = full state object, save it
+app.post('/api/progress', (req, res) => {
+  const body = req.body
+  if (!body || typeof body !== 'object') {
+    return res.status(400).json({ error: 'Invalid body' })
+  }
+  writeProgress(body)
+  res.json({ ok: true })
+})
 
 function getClient() {
   if (!process.env.ANTHROPIC_API_KEY) return null

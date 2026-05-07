@@ -1182,13 +1182,72 @@ const C = [
 ]
 
 // ─────────────────────────────────────────────
-//  STATE
+//  STATE  (localStorage + server sync)
 // ─────────────────────────────────────────────
 const KEY = 'sidneys_learning_v2'
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)||'{}') } catch { return {} } }
-const persist = s => { try { localStorage.setItem(KEY, JSON.stringify(s)) } catch {} }
 
-let S = load()
+// Local helpers (instant, no await needed)
+const loadLocal  = () => { try { return JSON.parse(localStorage.getItem(KEY)||'{}') } catch { return {} } }
+const saveLocal  = s  => { try { localStorage.setItem(KEY, JSON.stringify(s)) } catch {} }
+
+// Merge: take the copy with the higher currentDay (or more completed days)
+function mergeStates(a, b) {
+  if (!a || typeof a !== 'object') return b || {}
+  if (!b || typeof b !== 'object') return a || {}
+  const aDay = (a.currentDay ?? -1)
+  const bDay = (b.currentDay ?? -1)
+  // Use whichever has progressed further (higher currentDay wins)
+  const base = aDay >= bDay ? a : b
+  const other = aDay >= bDay ? b : a
+  // Merge days — keep the more-complete version of each day entry
+  const mergedDays = { ...(other.days || {}), ...(base.days || {}) }
+  return { ...base, days: mergedDays }
+}
+
+// Async server sync — fire-and-forget on saves, awaited on load
+let _syncTimeout = null
+function persist(s) {
+  saveLocal(s)
+  // Debounce server writes (300 ms) to avoid hammering on rapid changes
+  clearTimeout(_syncTimeout)
+  _syncTimeout = setTimeout(() => {
+    fetch('/api/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(s),
+    }).catch(() => {}) // silent — local copy still saved
+  }, 300)
+}
+
+// Boot: load local immediately, then merge with server in background
+let S = loadLocal()
+
+// Async init: pull server state and re-render if it has more progress
+async function syncFromServer() {
+  try {
+    const resp = await fetch('/api/progress')
+    if (!resp.ok) return
+    const serverState = await resp.json()
+    if (!serverState || typeof serverState !== 'object') return
+    const merged = mergeStates(S, serverState)
+    // Only re-render if anything actually changed
+    if (JSON.stringify(merged) !== JSON.stringify(S)) {
+      S = merged
+      saveLocal(S)
+      render()
+      showSyncBadge()
+    }
+  } catch { /* offline or server unavailable — use local */ }
+}
+
+function showSyncBadge() {
+  const b = document.createElement('div')
+  b.textContent = '✓ Synced from server'
+  b.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#10b981;color:#fff;padding:6px 14px;border-radius:8px;font-size:13px;z-index:9999;pointer-events:none;opacity:1;transition:opacity 1.5s'
+  document.body.appendChild(b)
+  setTimeout(() => { b.style.opacity = '0' }, 2000)
+  setTimeout(() => b.remove(), 3600)
+}
 // Migrate old state key
 if (!S.currentDay && !S.days) {
   const old = (() => { try { return JSON.parse(localStorage.getItem('sidneys_learning_v1')||'{}') } catch { return {} } })()
@@ -2063,6 +2122,8 @@ function go(dir) {
 //  INIT
 // ─────────────────────────────────────────────
 render()
+// Pull server state after first paint so phone & laptop stay in sync
+syncFromServer()
 </script>
 </body>
 </html>
