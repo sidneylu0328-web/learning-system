@@ -1031,6 +1031,16 @@
         </div>
         <div class="connection-q" id="connection-q"></div>
         <textarea id="connection-answer" placeholder="What's the link? Even a rough observation is valuable…" style="min-height:72px"></textarea>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="conn-fb-btn" onclick="getConnectionFeedback()" style="font-size:11px;padding:7px 14px">Get feedback →</button>
+        </div>
+        <div id="conn-fb-box" style="display:none;margin-top:10px">
+          <div style="font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;transition:color 0.5s">Connection Feedback</div>
+          <div id="conn-fb-text" style="font-size:13px;font-weight:300;line-height:1.75;color:var(--text-2);margin-bottom:12px"></div>
+          <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
+          <div style="font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;transition:color 0.5s">✦ Perfect Connection</div>
+          <div id="conn-perfect-text" style="font-size:13px;font-weight:300;line-height:1.75;color:var(--text-2)"></div>
+        </div>
       </div>
 
       <div class="btns">
@@ -1647,13 +1657,11 @@ function renderConnectionChallenge(idx, dd) {
   const card = document.getElementById('connection-card')
   if (idx === 0) { card.style.display = 'none'; return }
 
-  // Pick past concept
   const completedIndices = Object.keys(S.days).map(Number).filter(i => i < idx && S.days[i]?.step >= 4)
   let pastIdx
   if (completedIndices.length > 0) {
     pastIdx = completedIndices[idx % completedIndices.length]
   } else {
-    // Fall back: concepts[idx - 7] if available, else concepts[0]
     pastIdx = idx >= 7 ? idx - 7 : 0
   }
   const pastConcept = C[pastIdx].t
@@ -1662,6 +1670,16 @@ function renderConnectionChallenge(idx, dd) {
   document.getElementById('connection-q').textContent =
     `How does "${C[idx].t}" connect to "${pastConcept}"?`
   document.getElementById('connection-answer').value = dd.connectionAnswer || ''
+
+  // Restore cached feedback
+  const fbBox = document.getElementById('conn-fb-box')
+  if (dd.connectionFeedback) {
+    document.getElementById('conn-fb-text').innerHTML = dd.connectionFeedback.replace(/\n/g, '<br/>')
+    document.getElementById('conn-perfect-text').innerHTML = (dd.connectionPerfect || '').replace(/\n/g, '<br/>')
+    fbBox.style.display = 'block'
+  } else {
+    fbBox.style.display = 'none'
+  }
 }
 
 function renderFeedbackBox(dd) {
@@ -1842,6 +1860,52 @@ async function getFeedback() {
   } finally {
     btn.disabled = false
     btn.innerHTML = 'Get Feedback →'
+  }
+}
+
+// ─────────────────────────────────────────────
+//  CONNECTION FEEDBACK
+// ─────────────────────────────────────────────
+async function getConnectionFeedback() {
+  const answer = document.getElementById('connection-answer').value.trim()
+  if (!answer) { alert('Write your connection first.'); return }
+
+  const btn = document.getElementById('conn-fb-btn')
+  btn.disabled = true
+  btn.innerHTML = '<span class="spin-light"></span> Analyzing…'
+
+  const idx = S.currentDay
+  const dd = getDayState(idx)
+  const completedIndices = Object.keys(S.days).map(Number).filter(i => i < idx && S.days[i]?.step >= 4)
+  const pastIdx = completedIndices.length > 0 ? completedIndices[idx % completedIndices.length] : (idx >= 7 ? idx - 7 : 0)
+
+  try {
+    const r = await fetch('/api/connection-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        concept: C[idx].t,
+        pastConcept: C[pastIdx].t,
+        answer,
+      })
+    })
+    const data = await r.json()
+    if (data.error) throw new Error(data.error)
+
+    dd.connectionAnswer = answer
+    dd.connectionFeedback = data.feedback
+    dd.connectionPerfect = data.perfect
+    persist(S)
+
+    document.getElementById('conn-fb-text').innerHTML = data.feedback.replace(/\n/g, '<br/>')
+    document.getElementById('conn-perfect-text').innerHTML = data.perfect.replace(/\n/g, '<br/>')
+    document.getElementById('conn-fb-box').style.display = 'block'
+    document.getElementById('conn-fb-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  } catch (e) {
+    alert('Could not get feedback: ' + e.message)
+  } finally {
+    btn.disabled = false
+    btn.innerHTML = 'Get feedback →'
   }
 }
 

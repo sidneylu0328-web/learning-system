@@ -176,6 +176,49 @@ Keep each field to 1-2 sentences. Push him to think at the level of underlying p
   }
 })
 
+// ── Connection Challenge Feedback ─────────────────────────────────────────────
+app.post('/api/connection-feedback', async (req, res) => {
+  const { concept, pastConcept, answer } = req.body
+
+  if (!answer || answer.trim().length < 5) {
+    return res.status(400).json({ error: 'Write more before getting feedback.' })
+  }
+
+  const client = getClient()
+  if (!client) {
+    return res.json({ feedback: '⚠️ AI unavailable — ANTHROPIC_API_KEY not set.', perfect: '' })
+  }
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-opus-4-5',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: `Sidney is doing a connection challenge: how does "${concept}" connect to "${pastConcept}"?
+
+His answer: "${answer}"
+
+Respond with a JSON object (no markdown, no code block):
+{
+  "feedback": "<2-3 sentences: what he got right about the connection, what's still surface-level, and one sharper angle he missed>",
+  "perfect": "<the ideal 2-3 sentence answer showing the deepest, most precise connection between the two concepts>"
+}
+
+Be direct and specific. The perfect answer should reveal a non-obvious link, not just restate definitions.`
+      }]
+    })
+
+    let raw = message.content[0].text.trim()
+    raw = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/, '').trim()
+    const parsed = JSON.parse(raw)
+    res.json({ feedback: parsed.feedback || '', perfect: parsed.perfect || '' })
+  } catch (err) {
+    console.error('Connection feedback error:', err.message)
+    res.status(500).json({ error: 'Could not generate feedback. Try again.' })
+  }
+})
+
 // ── Perfect Answer ────────────────────────────────────────────────────────────
 app.post('/api/perfect-answer', async (req, res) => {
   const { concept, description, prompt, audience, week } = req.body
