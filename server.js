@@ -70,7 +70,7 @@ function getClient() {
 
 // ── AI Feedback on first explanation ──────────────────────────────────────────
 app.post('/api/feedback', async (req, res) => {
-  const { concept, week, explanation, audience } = req.body
+  const { concept, week, explanation, audience, notes } = req.body
 
   if (!explanation || explanation.trim().length < 10) {
     return res.status(400).json({ error: 'Please write more before requesting feedback.' })
@@ -90,6 +90,7 @@ app.post('/api/feedback', async (req, res) => {
 
   try {
     const audienceNote = audience ? `\nSidney was asked to explain this to: "${audience}"` : ''
+    const thinkingNotes = notes ? `\n\nSidney's pre-writing understanding notes:\n${notes}` : ''
 
     const message = await client.messages.create({
       model: 'claude-opus-4-5',
@@ -99,6 +100,7 @@ app.post('/api/feedback', async (req, res) => {
         content: `You are a Socratic tutor helping Sidney improve his ability to understand and articulate complex concepts. He's doing a 35-day program to deepen his thinking and communication skills.
 
 Concept: "${concept}" (Week: ${week})${audienceNote}
+${thinkingNotes}
 
 Sidney's explanation:
 "${explanation}"
@@ -129,6 +131,61 @@ Score guide: 1=barely scratched surface, 2=some basics but mostly vague, 3=solid
   } catch (err) {
     console.error('Feedback error:', err.message)
     res.status(500).json({ error: 'Could not generate feedback. Try again in a moment.' })
+  }
+})
+
+// ── Socratic question before final writing ───────────────────────────────────
+app.post('/api/tutor-question', async (req, res) => {
+  const { concept, description, week, prompt, notes } = req.body
+
+  if (!notes || notes.trim().length < 10) {
+    return res.status(400).json({ error: 'Add a few rough notes first.' })
+  }
+
+  const client = getClient()
+  if (!client) {
+    return res.json({
+      question: `What is the most important distinction someone must understand before they can use ${concept} well?`,
+      hint: 'Answer this before writing the full paragraph.'
+    })
+  }
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-opus-4-5',
+      max_tokens: 300,
+      messages: [{
+        role: 'user',
+        content: `You are a Socratic tutor helping Sidney understand a concept before he writes a polished explanation.
+
+Concept: "${concept}"
+Description: "${description}"
+Week: "${week}"
+Final writing prompt: "${prompt}"
+
+Sidney's rough notes:
+${notes}
+
+Respond with JSON only:
+{
+  "question": "<one short, specific question that targets the weakest or most interesting part of his notes>",
+  "hint": "<one gentle hint that tells him what kind of answer would show real understanding>"
+}
+
+Do not grade him yet. Make the question conversational, precise, and answerable in 2-4 sentences.`
+      }]
+    })
+
+    let raw = message.content[0].text.trim()
+    raw = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/, '').trim()
+    const parsed = JSON.parse(raw)
+    res.json({
+      question: parsed.question || '',
+      hint: parsed.hint || ''
+    })
+  } catch (err) {
+    console.error('Tutor question error:', err.message)
+    res.status(500).json({ error: 'Could not generate tutor question. Try again.' })
   }
 })
 

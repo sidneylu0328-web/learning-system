@@ -530,6 +530,66 @@
       margin-bottom: 14px;
     }
 
+    /* ── Build understanding ── */
+    .learning-brief {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      background: var(--surface-2);
+      margin-bottom: 16px;
+    }
+    .brief-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .brief-text {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--text-2);
+      line-height: 1.65;
+    }
+    .micro-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .micro-field {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(255,255,255,0.02);
+    }
+    .micro-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 6px;
+    }
+    .micro-hint {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-3);
+      line-height: 1.55;
+      margin-bottom: 8px;
+    }
+    textarea.micro-textarea {
+      min-height: 68px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .tutor-question {
+      margin-top: 12px;
+      border-left: 3px solid var(--accent);
+    }
+
     textarea {
       width: 100%;
       min-height: 152px;
@@ -1003,11 +1063,54 @@
 
     <div class="card-line"></div>
 
-    <!-- Step 2: Explain -->
-    <div class="step" id="step2">
+    <!-- Step 2: Build Understanding -->
+    <div class="step" id="build-step">
       <div class="step-head">
         <div class="step-num">2</div>
-        <div class="step-label">Step Two &nbsp;·&nbsp; <em>Explain It</em></div>
+        <div class="step-label">Step Two &nbsp;·&nbsp; <em>Build Understanding</em></div>
+      </div>
+
+      <div class="learning-brief">
+        <div class="brief-title">Reading mission</div>
+        <div class="brief-text">Before writing the polished answer, pull out the raw pieces: the core idea, one concrete example, and where the idea stops working.</div>
+      </div>
+
+      <div class="micro-grid">
+        <div class="micro-field">
+          <label class="micro-label" for="understand-core">Core idea</label>
+          <div class="micro-hint">Say it in one plain sentence. No need to sound impressive yet.</div>
+          <textarea class="micro-textarea" id="understand-core" placeholder="This concept means…"></textarea>
+        </div>
+        <div class="micro-field">
+          <label class="micro-label" for="understand-example">Example</label>
+          <div class="micro-hint">Use a real situation, preferably from work, money, decisions, or relationships.</div>
+          <textarea class="micro-textarea" id="understand-example" placeholder="For example…"></textarea>
+        </div>
+        <div class="micro-field">
+          <label class="micro-label" for="understand-limits">Limit or trap</label>
+          <div class="micro-hint">Where could this concept mislead someone, or where does it need nuance?</div>
+          <textarea class="micro-textarea" id="understand-limits" placeholder="This can mislead when…"></textarea>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="btn btn-outline" id="tutor-btn" onclick="getTutorQuestion()">Ask me a tutor question →</button>
+      </div>
+
+      <div id="tutor-box" class="feedback-box tutor-question" style="display:none">
+        <div class="feedback-label">Tutor Question</div>
+        <div id="tutor-question-text" class="feedback-section-body"></div>
+        <div id="tutor-hint-text" class="micro-hint" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="card-line"></div>
+
+    <!-- Step 3: Explain -->
+    <div class="step" id="step2">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div class="step-label">Step Three &nbsp;·&nbsp; <em>Explain It</em></div>
       </div>
 
       <!-- Audience badge -->
@@ -1065,13 +1168,13 @@
       </div>
     </div>
 
-    <!-- Step 3: Revise -->
+    <!-- Step 4: Revise -->
     <div class="revision-step" id="step3" style="display:none">
       <div class="step-head">
-        <div class="step-num">3</div>
-        <div class="step-label">Step Three &nbsp;·&nbsp; <em>Revise It</em></div>
+        <div class="step-num">4</div>
+        <div class="step-label">Step Four &nbsp;·&nbsp; <em>Revise It</em></div>
       </div>
-      <p class="prompt-text">Look at the feedback above, then revise your explanation. Make it sharper, deeper, or clearer.</p>
+      <p class="prompt-text">Look at the feedback above, then make one focused improvement: sharpen the definition, improve the example, or add the missing nuance.</p>
       <textarea id="revision-text" placeholder="Revise your explanation based on the feedback…"></textarea>
       <div style="margin-top:12px">
         <div class="btns">
@@ -1284,6 +1387,9 @@ if (!S.currentDay && !S.days) {
         S.days[idx] = {
           step: od.completed ? 4 : (od.read ? 1 : 0),
           audience: AUDIENCES[idx % AUDIENCES.length],
+          understanding: { core: '', example: '', limits: '' },
+          tutorQuestion: null,
+          tutorHint: null,
           explanation: od.explanation || '',
           connectionAnswer: '',
           score: null,
@@ -1314,6 +1420,9 @@ function getDayState(idx) {
     S.days[idx] = {
       step: 0,
       audience: AUDIENCES[idx % AUDIENCES.length],
+      understanding: { core: '', example: '', limits: '' },
+      tutorQuestion: null,
+      tutorHint: null,
       explanation: '',
       connectionAnswer: '',
       score: null,
@@ -1392,6 +1501,22 @@ function confetti() {
 
 function wc(str) {
   return str.trim() ? str.trim().split(/\s+/).length : 0
+}
+
+function ensureUnderstanding(dd) {
+  if (!dd.understanding || typeof dd.understanding !== 'object') {
+    dd.understanding = { core: '', example: '', limits: '' }
+  }
+  return dd.understanding
+}
+
+function getUnderstandingSummary(dd) {
+  const u = ensureUnderstanding(dd)
+  return [
+    u.core && `Core idea: ${u.core}`,
+    u.example && `Example: ${u.example}`,
+    u.limits && `Limit or trap: ${u.limits}`,
+  ].filter(Boolean).join('\n')
 }
 
 function mkScoreBar(score, containerId) {
@@ -1699,11 +1824,19 @@ function render() {
   // Read checkbox
   const chk = document.getElementById('read-chk')
   chk.checked = dd.step >= 1
+  document.getElementById('build-step').classList.toggle('step-locked', dd.step < 1)
   document.getElementById('step2').classList.toggle('step-locked', dd.step < 1)
 
   // Audience badge
   const audience = dd.audience || AUDIENCES[idx % AUDIENCES.length]
   document.getElementById('audience-text').textContent = `Explain this as if to: ${audience}`
+
+  // Build understanding
+  const understanding = ensureUnderstanding(dd)
+  document.getElementById('understand-core').value = understanding.core || ''
+  document.getElementById('understand-example').value = understanding.example || ''
+  document.getElementById('understand-limits').value = understanding.limits || ''
+  renderTutorQuestion(dd)
 
   // Explanation textarea
   document.getElementById('explanation').value = dd.explanation || ''
@@ -1789,6 +1922,20 @@ function renderFeedbackBox(dd) {
   }
 }
 
+function renderTutorQuestion(dd) {
+  const box = document.getElementById('tutor-box')
+  const q = document.getElementById('tutor-question-text')
+  const hint = document.getElementById('tutor-hint-text')
+  if (dd.tutorQuestion) {
+    q.textContent = dd.tutorQuestion
+    hint.textContent = dd.tutorHint ? `Hint: ${dd.tutorHint}` : ''
+    hint.style.display = dd.tutorHint ? 'block' : 'none'
+    box.style.display = 'block'
+  } else {
+    box.style.display = 'none'
+  }
+}
+
 function renderRevisionStep(dd) {
   const step3 = document.getElementById('step3')
   const rfb = document.getElementById('revision-fb-box')
@@ -1851,7 +1998,21 @@ document.getElementById('read-chk').addEventListener('change', function () {
     if (dd.step <= 1) dd.step = 0
   }
   persist(S)
+  document.getElementById('build-step').classList.toggle('step-locked', dd.step < 1)
   document.getElementById('step2').classList.toggle('step-locked', dd.step < 1)
+})
+
+;['core', 'example', 'limits'].forEach(part => {
+  const el = document.getElementById(`understand-${part}`)
+  el.addEventListener('input', function () {
+    const dd = getDayState(S.currentDay)
+    const understanding = ensureUnderstanding(dd)
+    understanding[part] = this.value
+    dd.tutorQuestion = null
+    dd.tutorHint = null
+    renderTutorQuestion(dd)
+    persist(S)
+  })
 })
 
 document.getElementById('explanation').addEventListener('input', function () {
@@ -1866,6 +2027,62 @@ document.getElementById('connection-answer').addEventListener('input', function 
   dd.connectionAnswer = this.value
   persist(S)
 })
+
+// ─────────────────────────────────────────────
+//  TUTOR QUESTION
+// ─────────────────────────────────────────────
+async function getTutorQuestion() {
+  const idx = S.currentDay
+  const c = C[idx]
+  const wi = Math.floor(idx / 7)
+  const dd = getDayState(idx)
+  const notes = getUnderstandingSummary(dd)
+  if (wc(notes) < 8) {
+    alert('Add a rough core idea, example, or limit first. Messy notes are fine.')
+    return
+  }
+
+  const btn = document.getElementById('tutor-btn')
+  btn.disabled = true
+  btn.innerHTML = '<span class="spin-light"></span> Thinking…'
+
+  try {
+    const r = await fetch('/api/tutor-question', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        concept: c.t,
+        description: c.d,
+        week: WEEKS[wi].title,
+        prompt: c.p,
+        notes,
+      })
+    })
+    const data = await r.json()
+    if (data.error) throw new Error(data.error)
+
+    dd.tutorQuestion = data.question || fallbackTutorQuestion(c.t, dd)
+    dd.tutorHint = data.hint || ''
+    persist(S)
+    renderTutorQuestion(dd)
+    document.getElementById('tutor-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  } catch (e) {
+    dd.tutorQuestion = fallbackTutorQuestion(c.t, dd)
+    dd.tutorHint = 'Use this to test whether your explanation can survive a follow-up question.'
+    persist(S)
+    renderTutorQuestion(dd)
+  } finally {
+    btn.disabled = false
+    btn.innerHTML = 'Ask me a tutor question →'
+  }
+}
+
+function fallbackTutorQuestion(concept, dd) {
+  const u = ensureUnderstanding(dd)
+  if (!u.example) return `Can you give a concrete example of ${concept} from a real decision, not just a definition?`
+  if (!u.limits) return `When would applying ${concept} too mechanically lead someone to the wrong conclusion?`
+  return `What is the most important distinction someone must understand before they can use ${concept} well?`
+}
 
 // ─────────────────────────────────────────────
 //  GET FEEDBACK
@@ -1894,6 +2111,7 @@ async function getFeedback() {
         week: WEEKS[wi].title,
         explanation: txt,
         audience: dd.audience,
+        notes: getUnderstandingSummary(dd),
       })
     })
     const data = await r.json()
