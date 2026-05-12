@@ -834,6 +834,28 @@
       color: #86c89b;
       animation: fadeUp 0.3s ease;
     }
+    .review-task {
+      display: none;
+      border: 1px solid rgba(240,201,106,0.35);
+      border-left: 3px solid #f0c96a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      background: rgba(240,201,106,0.08);
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.65;
+      margin-bottom: 14px;
+    }
+    .review-task strong {
+      display: block;
+      color: #f0c96a;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
 
     /* ── Synthesis card ── */
     .synthesis-card {
@@ -1120,6 +1142,10 @@
       </div>
 
       <p class="prompt-text" id="write-prompt"></p>
+      <div class="review-task" id="review-task">
+        <strong>Review task</strong>
+        Rewrite this from memory, then get feedback. Once you submit review feedback, this concept will be scheduled for the next review interval.
+      </div>
       <textarea id="explanation" placeholder="Write in your own words — as if teaching a smart friend who has never heard of this concept…"></textarea>
       <div class="count-row">
         <span class="word-ct"><span id="wc">0</span> words</span>
@@ -1469,12 +1495,24 @@ function getDueForReview() {
   return due
 }
 
+function isDueReview(dd) {
+  return !!(dd && dd.step >= 4 && dd.nextReviewDue && dd.nextReviewDue <= Date.now())
+}
+
 function markReviewed(idx) {
   const dd = getDayState(idx)
   dd.lastReviewedAt = Date.now()
   dd.reviewCount = (dd.reviewCount || 0) + 1
   dd.nextReviewDue = calcNextReview(dd)
   persist(S)
+}
+
+function openReview(idx) {
+  S.currentDay = idx
+  persist(S)
+  render()
+  const task = document.getElementById('review-task')
+  if (task) task.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 // ─────────────────────────────────────────────
@@ -1748,6 +1786,7 @@ function render() {
   const w = WEEKS[wi]
   const th = THEMES[wi]
   const dd = getDayState(idx)
+  const reviewActive = isDueReview(dd)
 
   applyTheme(wi)
 
@@ -1770,7 +1809,7 @@ function render() {
       const chip = document.createElement('button')
       chip.className = 'review-chip'
       chip.innerHTML = `🔁 ${C[i].t}`
-      chip.onclick = () => { S.currentDay = i; persist(S); render(); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+      chip.onclick = () => openReview(i)
       revChips.appendChild(chip)
     })
   } else {
@@ -1791,7 +1830,7 @@ function render() {
     const abd = S.days[abs]
     if (abd && abd.step >= 4) b.classList.add('completed')
     // check review due
-    const isDue = abd && abd.step >= 4 && abd.nextReviewDue && abd.nextReviewDue <= Date.now()
+    const isDue = isDueReview(abd)
     if (isDue) {
       b.classList.add('due-review')
       const dot = document.createElement('span')
@@ -1801,7 +1840,7 @@ function render() {
     }
     const label = document.createTextNode(w.days[i])
     b.insertBefore(label, b.firstChild)
-    b.onclick = () => { S.currentDay = abs; persist(S); render() }
+    b.onclick = () => { isDueReview(S.days[abs]) ? openReview(abs) : (S.currentDay = abs, persist(S), render()) }
     dt.appendChild(b)
   }
 
@@ -1819,7 +1858,11 @@ function render() {
   document.getElementById('res-link').href = c.r.u
   document.getElementById('res-title').textContent = c.r.n
   document.getElementById('res-source').textContent = c.r.s
-  document.getElementById('write-prompt').textContent = c.p
+  document.getElementById('write-prompt').textContent = reviewActive
+    ? `Review ${c.t} from memory. Try not to copy your old answer: explain the core idea, one example, and one limitation as clearly as you can.`
+    : c.p
+  document.getElementById('review-task').style.display = reviewActive ? 'block' : 'none'
+  document.getElementById('fb-btn').textContent = reviewActive ? 'Get Review Feedback →' : 'Get Feedback →'
 
   // Read checkbox
   const chk = document.getElementById('read-chk')
@@ -1839,7 +1882,10 @@ function render() {
   renderTutorQuestion(dd)
 
   // Explanation textarea
-  document.getElementById('explanation').value = dd.explanation || ''
+  const explanationEl = document.getElementById('explanation')
+  explanationEl.readOnly = false
+  explanationEl.style.opacity = ''
+  explanationEl.value = dd.explanation || ''
   updateWC()
 
   // Connection challenge
@@ -1849,10 +1895,10 @@ function render() {
   renderFeedbackBox(dd)
 
   // Step 3
-  renderRevisionStep(dd)
+  renderRevisionStep(dd, reviewActive)
 
   // Done banner
-  document.getElementById('done-banner').style.display = dd.step >= 4 ? 'flex' : 'none'
+  document.getElementById('done-banner').style.display = dd.step >= 4 && !reviewActive ? 'flex' : 'none'
 
   // Nav
   document.getElementById('prev-btn').disabled = idx <= 0
@@ -1936,26 +1982,35 @@ function renderTutorQuestion(dd) {
   }
 }
 
-function renderRevisionStep(dd) {
+function renderRevisionStep(dd, reviewActive = false) {
   const step3 = document.getElementById('step3')
   const rfb = document.getElementById('revision-fb-box')
   const completeBtn = document.getElementById('complete-btn')
+  const rta = document.getElementById('revision-text')
+  const rb = document.getElementById('revision-btn')
+  const skip = step3.querySelector('.btn-ghost')
+
+  rta.readOnly = false
+  rta.style.opacity = ''
+  if (rb) {
+    rb.style.display = 'inline-flex'
+    rb.disabled = false
+  }
+  if (skip) skip.style.display = 'inline-flex'
 
   // Show step 3 only once feedback exists and not yet fully complete
-  if (dd.feedback && dd.step < 4) {
+  if (dd.feedback && (dd.step < 4 || reviewActive)) {
     step3.style.display = 'block'
-    document.getElementById('revision-text').value = dd.revision || dd.explanation || ''
+    rta.value = reviewActive ? (dd.explanation || '') : (dd.revision || dd.explanation || '')
+    if (rb) rb.innerHTML = reviewActive ? 'Submit Review Rewrite →' : 'Submit Revision →'
   } else if (dd.step >= 4) {
     // still show if they did revision feedback
     step3.style.display = dd.revisionFeedback || dd.revision ? 'block' : 'none'
     // disable inputs if complete
-    const rta = document.getElementById('revision-text')
     rta.value = dd.revision || dd.explanation || ''
     rta.readOnly = true
     rta.style.opacity = '0.5'
-    const rb = document.getElementById('revision-btn')
     if (rb) rb.style.display = 'none'
-    const skip = step3.querySelector('.btn-ghost')
     if (skip) skip.style.display = 'none'
   } else {
     step3.style.display = 'none'
@@ -1970,7 +2025,7 @@ function renderRevisionStep(dd) {
       mkScoreBar(dd.revisionScore, 'score-bar-2')
     }
     renderRevisionFeedbackSections(dd.revisionFeedback, 'revision-fb-sections')
-    if (completeBtn) completeBtn.style.display = dd.step >= 4 ? 'none' : 'inline-flex'
+    if (completeBtn) completeBtn.style.display = dd.step >= 4 && !reviewActive ? 'none' : 'inline-flex'
   } else {
     rfb.style.display = 'none'
   }
@@ -2101,6 +2156,7 @@ async function getFeedback() {
   const wi = Math.floor(idx / 7)
   const dd = getDayState(idx)
   const isReview = dd.step >= 4  // re-explaining a completed concept = review
+  const wasDueReview = isDueReview(dd)
 
   try {
     const r = await fetch('/api/feedback', {
@@ -2137,8 +2193,9 @@ async function getFeedback() {
     }
 
     persist(S)
+    render()
     renderFeedbackBox(dd)
-    renderRevisionStep(dd)
+    renderRevisionStep(dd, wasDueReview && isDueReview(dd))
 
     document.getElementById('fb-box').style.display = 'block'
     document.getElementById('fb-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -2151,7 +2208,7 @@ async function getFeedback() {
     alert('Could not get feedback: ' + e.message)
   } finally {
     btn.disabled = false
-    btn.innerHTML = 'Get Feedback →'
+    btn.innerHTML = isDueReview(getDayState(S.currentDay)) ? 'Get Review Feedback →' : 'Get Feedback →'
   }
 }
 
@@ -2276,6 +2333,7 @@ async function submitRevision() {
   const idx = S.currentDay
   const c = C[idx]
   const dd = getDayState(idx)
+  const isReview = isDueReview(dd)
 
   try {
     const r = await fetch('/api/revision-feedback', {
@@ -2293,16 +2351,18 @@ async function submitRevision() {
     dd.revision = rev
     dd.revisionScore = data.score || null
     dd.revisionFeedback = data.feedback || {}
+    if (isReview) markReviewed(idx)
     persist(S)
 
-    renderRevisionStep(dd)
+    render()
+    renderRevisionStep(dd, false)
     document.getElementById('revision-fb-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     renderScoreChart()
   } catch (e) {
     alert('Could not get revision feedback: ' + e.message)
   } finally {
     const b = document.getElementById('revision-btn')
-    if (b) { b.disabled = false; b.innerHTML = 'Submit Revision →' }
+    if (b) { b.disabled = false; b.innerHTML = isDueReview(getDayState(S.currentDay)) ? 'Submit Review Rewrite →' : 'Submit Revision →' }
   }
 }
 
