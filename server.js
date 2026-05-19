@@ -97,7 +97,7 @@ app.post('/api/feedback', async (req, res) => {
       max_tokens: 700,
       messages: [{
         role: 'user',
-        content: `You are a Socratic tutor helping Sidney improve his ability to understand and articulate complex concepts. He's doing a 35-day program to deepen his thinking and communication skills.
+        content: `You are a Socratic tutor helping Sidney become the kind of person who seems broadly knowledgeable because he can name concepts, explain them simply, apply them to real situations, and add nuance without sounding pretentious. He's doing a 35-day program to deepen his thinking and communication skills.
 
 Concept: "${concept}" (Week: ${week})${audienceNote}
 ${thinkingNotes}
@@ -107,13 +107,13 @@ Sidney's explanation:
 
 Respond with a JSON object (no markdown, no code block) in exactly this format:
 {
-  "score": <integer 1-5 where 1=very shallow, 3=decent grasp, 5=excellent depth and clarity>,
-  "right": "<what he got right — be specific, 1-2 sentences>",
-  "improve": "<what could be deeper or clearer — be direct, not harsh, 1-2 sentences>",
-  "question": "<one Socratic question to push him further — make it genuinely challenging>"
+  "score": <integer 1-5 where 1=very shallow, 3=usable grasp, 5=clear, connected, and conversation-ready>,
+  "right": "<what he got right about the concept and why it would sound knowledgeable — be specific, 1-2 sentences>",
+  "improve": "<what would make it more precise, concrete, connected, or nuanced — be direct, not harsh, 1-2 sentences>",
+  "question": "<one Socratic question that forces either a non-example, limitation, deeper distinction, or real-world application>"
 }
 
-Score guide: 1=barely scratched surface, 2=some basics but mostly vague, 3=solid understanding with gaps, 4=clear and nuanced, 5=excellent depth, precision, and insight.`
+Score guide: 1=barely scratched surface, 2=some basics but mostly vague, 3=usable explanation with gaps, 4=clear and nuanced, 5=excellent: simple definition, vivid example, meaningful distinction, and a natural conversational phrasing. Penalize abstract answers that do not show where the concept applies and where it does not.`
       }]
     })
 
@@ -156,7 +156,7 @@ app.post('/api/tutor-question', async (req, res) => {
       max_tokens: 300,
       messages: [{
         role: 'user',
-        content: `You are a Socratic tutor helping Sidney understand a concept before he writes a polished explanation.
+        content: `You are a Socratic tutor helping Sidney turn a concept into usable conversational knowledge before he writes a polished explanation.
 
 Concept: "${concept}"
 Description: "${description}"
@@ -168,11 +168,11 @@ ${notes}
 
 Respond with JSON only:
 {
-  "question": "<one short, specific question that targets the weakest or most interesting part of his notes>",
-  "hint": "<one gentle hint that tells him what kind of answer would show real understanding>"
+  "question": "<one short, specific question that targets the weakest or most interesting part of his concept card>",
+  "hint": "<one gentle hint that tells him what kind of answer would show usable understanding>"
 }
 
-Do not grade him yet. Make the question conversational, precise, and answerable in 2-4 sentences.`
+Do not grade him yet. Prefer questions that force a non-example, a limitation, a better example, or a natural phrase he could use in conversation. Make the question precise and answerable in 2-4 sentences.`
       }]
     })
 
@@ -211,7 +211,7 @@ app.post('/api/revision-feedback', async (req, res) => {
       max_tokens: 500,
       messages: [{
         role: 'user',
-        content: `You are a Socratic tutor. Sidney just revised his explanation of "${concept}" after receiving feedback.
+        content: `You are a Socratic tutor. Sidney just revised his explanation of "${concept}" after receiving feedback. Judge whether the revision would make him sound more thoughtful, precise, and broadly knowledgeable in a real conversation.
 
 Original explanation:
 "${original}"
@@ -222,7 +222,7 @@ Revised explanation:
 Respond with a JSON object (no markdown, no code block):
 {
   "score": <integer 1-5>,
-  "improvement": "<1-2 sentences on what specifically improved>",
+  "improvement": "<1-2 sentences on what specifically improved in clarity, example quality, connection, or nuance>",
   "still_missing": "<1 sentence on what's still weak, or 'Nothing major — this is solid.' if score is 4+>",
   "verdict": "<one punchy sentence: overall assessment of the revision>"
 }
@@ -350,7 +350,7 @@ app.post('/api/perfect-answer', async (req, res) => {
 
 Prompt: "${prompt}"
 
-Write a response that scores 5/5: clear, specific, uses a vivid real-world example, shows genuine depth, and is perfectly pitched to the audience. Aim for 110–150 words. No preamble — write the answer directly as Sidney would.`
+Write a response that scores 5/5 and sounds naturally knowledgeable, not academic. Use this shape without labeling the parts: observation → concept → vivid real-world example → limitation or nuance → one sentence Sidney could plausibly say in conversation. Aim for 120–170 words. No preamble — write the answer directly as Sidney would.`
       }]
     })
     res.json({ answer: message.content[0].text.trim() })

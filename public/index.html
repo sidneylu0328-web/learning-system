@@ -993,8 +993,8 @@
 
   <div class="header">
     <p class="header-eyebrow" id="eyebrow">Sidney's Learning System</p>
-    <h1 class="header-title">Read. Explain.<br>Get Feedback.</h1>
-    <p class="header-sub">35 concepts &nbsp;·&nbsp; Daily practice &nbsp;·&nbsp; Built-in evaluation</p>
+    <h1 class="header-title">Build a Concept Library.<br>Sound Thoughtful.</h1>
+    <p class="header-sub">35 concepts &nbsp;·&nbsp; Articulation drills &nbsp;·&nbsp; Usable knowledge</p>
   </div>
 
   <div class="progress-wrap">
@@ -1094,7 +1094,7 @@
 
       <div class="learning-brief">
         <div class="brief-title">Reading mission</div>
-        <div class="brief-text">Before writing the polished answer, pull out the raw pieces: the core idea, one concrete example, and where the idea stops working.</div>
+        <div class="brief-text">Build a usable concept card: the plain meaning, example, opposite case, limitation, and a phrase you could naturally use in conversation.</div>
       </div>
 
       <div class="micro-grid">
@@ -1109,9 +1109,19 @@
           <textarea class="micro-textarea" id="understand-example" placeholder="For example…"></textarea>
         </div>
         <div class="micro-field">
+          <label class="micro-label" for="understand-nonexample">Non-example</label>
+          <div class="micro-hint">Name a similar-looking situation where this concept would not actually apply.</div>
+          <textarea class="micro-textarea" id="understand-nonexample" placeholder="This is not the same as…"></textarea>
+        </div>
+        <div class="micro-field">
           <label class="micro-label" for="understand-limits">Limit or trap</label>
           <div class="micro-hint">Where could this concept mislead someone, or where does it need nuance?</div>
           <textarea class="micro-textarea" id="understand-limits" placeholder="This can mislead when…"></textarea>
+        </div>
+        <div class="micro-field">
+          <label class="micro-label" for="understand-phrase">Conversation phrase</label>
+          <div class="micro-hint">Write one sentence you could actually say to make a smart observation without sounding like a lecture.</div>
+          <textarea class="micro-textarea" id="understand-phrase" placeholder="One way to frame this is…"></textarea>
         </div>
       </div>
 
@@ -1142,6 +1152,10 @@
       </div>
 
       <p class="prompt-text" id="write-prompt"></p>
+      <div class="learning-brief">
+        <div class="brief-title">Articulation formula</div>
+        <div class="brief-text">Write as: observation → concept → concrete example → nuance. The goal is not to recite the definition; the goal is to sound like someone who can notice a pattern and explain it generously.</div>
+      </div>
       <div class="review-task" id="review-task">
         <strong>Review task</strong>
         Rewrite this from memory, then get feedback. Once you submit review feedback, this concept will be scheduled for the next review interval.
@@ -1413,7 +1427,7 @@ if (!S.currentDay && !S.days) {
         S.days[idx] = {
           step: od.completed ? 4 : (od.read ? 1 : 0),
           audience: AUDIENCES[idx % AUDIENCES.length],
-          understanding: { core: '', example: '', limits: '' },
+          understanding: { core: '', example: '', nonexample: '', limits: '', phrase: '' },
           tutorQuestion: null,
           tutorHint: null,
           explanation: od.explanation || '',
@@ -1446,7 +1460,7 @@ function getDayState(idx) {
     S.days[idx] = {
       step: 0,
       audience: AUDIENCES[idx % AUDIENCES.length],
-      understanding: { core: '', example: '', limits: '' },
+      understanding: { core: '', example: '', nonexample: '', limits: '', phrase: '' },
       tutorQuestion: null,
       tutorHint: null,
       explanation: '',
@@ -1543,8 +1557,10 @@ function wc(str) {
 
 function ensureUnderstanding(dd) {
   if (!dd.understanding || typeof dd.understanding !== 'object') {
-    dd.understanding = { core: '', example: '', limits: '' }
+    dd.understanding = { core: '', example: '', nonexample: '', limits: '', phrase: '' }
   }
+  if (dd.understanding.nonexample === undefined) dd.understanding.nonexample = ''
+  if (dd.understanding.phrase === undefined) dd.understanding.phrase = ''
   return dd.understanding
 }
 
@@ -1553,7 +1569,9 @@ function getUnderstandingSummary(dd) {
   return [
     u.core && `Core idea: ${u.core}`,
     u.example && `Example: ${u.example}`,
+    u.nonexample && `Non-example: ${u.nonexample}`,
     u.limits && `Limit or trap: ${u.limits}`,
+    u.phrase && `Conversation phrase: ${u.phrase}`,
   ].filter(Boolean).join('\n')
 }
 
@@ -1597,13 +1615,18 @@ function renderRevisionFeedbackSections(data, containerId) {
   const el = document.getElementById(containerId)
   if (!el) return
   el.innerHTML = ''
+  const normalized = {
+    improved: data.improved || data.improvement || '',
+    missing: data.missing || data.still_missing || '',
+    verdict: data.verdict || '',
+  }
   const sections = [
     { key: 'improved', icon: '↑', label: 'What improved' },
     { key: 'missing',  icon: '◎', label: 'Still missing' },
     { key: 'verdict',  icon: '✦', label: 'Verdict' },
   ]
   sections.forEach(({ key, icon, label }) => {
-    if (!data[key]) return
+    if (!normalized[key]) return
     const sec = document.createElement('div')
     sec.className = 'feedback-section'
     const head = document.createElement('div')
@@ -1611,7 +1634,7 @@ function renderRevisionFeedbackSections(data, containerId) {
     head.innerHTML = `<span>${icon}</span><span>${label}</span>`
     const body = document.createElement('div')
     body.className = 'feedback-section-body'
-    body.innerHTML = data[key].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
+    body.innerHTML = normalized[key].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
     sec.appendChild(head)
     sec.appendChild(body)
     el.appendChild(sec)
@@ -1878,7 +1901,9 @@ function render() {
   const understanding = ensureUnderstanding(dd)
   document.getElementById('understand-core').value = understanding.core || ''
   document.getElementById('understand-example').value = understanding.example || ''
+  document.getElementById('understand-nonexample').value = understanding.nonexample || ''
   document.getElementById('understand-limits').value = understanding.limits || ''
+  document.getElementById('understand-phrase').value = understanding.phrase || ''
   renderTutorQuestion(dd)
 
   // Explanation textarea
@@ -2057,7 +2082,7 @@ document.getElementById('read-chk').addEventListener('change', function () {
   document.getElementById('step2').classList.toggle('step-locked', dd.step < 1)
 })
 
-;['core', 'example', 'limits'].forEach(part => {
+;['core', 'example', 'nonexample', 'limits', 'phrase'].forEach(part => {
   const el = document.getElementById(`understand-${part}`)
   el.addEventListener('input', function () {
     const dd = getDayState(S.currentDay)
@@ -2135,7 +2160,9 @@ async function getTutorQuestion() {
 function fallbackTutorQuestion(concept, dd) {
   const u = ensureUnderstanding(dd)
   if (!u.example) return `Can you give a concrete example of ${concept} from a real decision, not just a definition?`
+  if (!u.nonexample) return `What is one situation that may look like ${concept}, but is actually something else?`
   if (!u.limits) return `When would applying ${concept} too mechanically lead someone to the wrong conclusion?`
+  if (!u.phrase) return `How would you bring up ${concept} in a real conversation without sounding like you are giving a lecture?`
   return `What is the most important distinction someone must understand before they can use ${concept} well?`
 }
 
