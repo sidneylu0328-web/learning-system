@@ -579,6 +579,43 @@
       line-height: 1.55;
       margin-bottom: 8px;
     }
+    .micro-helper {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.025);
+      margin: 2px 0 10px;
+    }
+    .micro-helper-text {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-3);
+      line-height: 1.55;
+      margin-bottom: 8px;
+    }
+    .micro-helper-text strong {
+      color: var(--text-2);
+      font-weight: 500;
+    }
+    .mini-btn {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-2);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .mini-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
     textarea.micro-textarea {
       min-height: 68px;
       padding: 12px 14px;
@@ -1094,7 +1131,7 @@
 
       <div class="learning-brief">
         <div class="brief-title">Reading mission</div>
-        <div class="brief-text">Build a usable concept card: the plain meaning, example, opposite case, limitation, and a phrase you could naturally use in conversation.</div>
+        <div class="brief-text">Build a usable concept card: the plain meaning, example, optional boundary, optional nuance, and a phrase you could naturally use in conversation.</div>
       </div>
 
       <div class="micro-grid">
@@ -1109,14 +1146,16 @@
           <textarea class="micro-textarea" id="understand-example" placeholder="For example…"></textarea>
         </div>
         <div class="micro-field">
-          <label class="micro-label" for="understand-nonexample">Non-example</label>
-          <div class="micro-hint">Name a similar-looking situation where this concept would not actually apply.</div>
-          <textarea class="micro-textarea" id="understand-nonexample" placeholder="This is not the same as…"></textarea>
+          <label class="micro-label" for="understand-nonexample">What this is not <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+          <div class="micro-hint">Use this only if you can see the boundary. A similar-looking case helps you avoid overusing the concept.</div>
+          <div class="micro-helper" id="nonexample-helper"></div>
+          <textarea class="micro-textarea" id="understand-nonexample" placeholder="This is not the same as..."></textarea>
         </div>
         <div class="micro-field">
-          <label class="micro-label" for="understand-limits">Limit or trap</label>
-          <div class="micro-hint">Where could this concept mislead someone, or where does it need nuance?</div>
-          <textarea class="micro-textarea" id="understand-limits" placeholder="This can mislead when…"></textarea>
+          <label class="micro-label" for="understand-limits">Where this can mislead <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+          <div class="micro-hint">This is the nuance move: when would a smart person apply the concept too mechanically?</div>
+          <div class="micro-helper" id="limits-helper"></div>
+          <textarea class="micro-textarea" id="understand-limits" placeholder="This can mislead when..."></textarea>
         </div>
         <div class="micro-field">
           <label class="micro-label" for="understand-phrase">Conversation phrase</label>
@@ -1323,6 +1362,41 @@ const C = [
   { t:'Bayesian Thinking', d:"Start with a prior belief, observe evidence, update proportionally. Rational belief change means updating — not flipping.", r:{n:'Bayesian Thinking: Updating Your Beliefs Rationally',s:'Farnam Street',u:'https://fs.blog/thomas-bayes-and-bayesian-thinking/'}, p:'Explain Bayesian thinking in plain English. How is it different from how most people change their beliefs?', q:"Think of a strong belief. What evidence would actually change your mind — and are you genuinely open to it?" },
   { t:'Compounding Knowledge', d:"What you learn becomes the foundation for what you can learn next. The rate of learning itself compounds over time.", r:{n:'The Great Mental Models: Why Learning to Think Matters',s:'Farnam Street',u:'https://fs.blog/mental-models/'}, p:'Explain why knowledge compounds and how the structure of your learning determines how fast it grows.', q:"Looking back at this 35-day program: which concepts have started connecting in your thinking?" },
 ]
+
+const SCAFFOLDS = {
+  'Signaling': {
+    nonexample: 'Not every expensive choice is signaling. If someone buys a high-quality suitcase because it lasts longer and nobody else sees it, the main reason may be practical value, not status.',
+    limits: 'Signaling can mislead when you assume every action is performative. Sometimes people genuinely like something or choose it for practical reasons.',
+  },
+  'Status Games': {
+    nonexample: 'A group of friends choosing a restaurant because it is convenient is not necessarily a status game. It becomes one when people use the choice to prove taste, rank, or belonging.',
+    limits: 'This can mislead when you start seeing every disagreement as status-seeking. Sometimes people simply have different preferences or information.',
+  },
+  "Goodhart's Law": {
+    nonexample: 'A metric is not automatically Goodhart\'s Law. Tracking attendance to understand engagement is fine until people optimize attendance while ignoring actual learning.',
+    limits: 'Goodhart\'s Law does not mean all metrics are bad. The trap is confusing the metric with the deeper goal.',
+  },
+  'Principal-Agent Problem': {
+    nonexample: 'A bad outcome is not always a principal-agent problem. If the advisor and client wanted the same thing but both lacked information, the issue may be uncertainty, not misaligned incentives.',
+    limits: 'This can mislead when you assume everyone is selfish. The point is not that people are bad, but that incentives quietly shape behavior.',
+  },
+  'Coordination Problems': {
+    nonexample: 'If one person refuses to cooperate while everyone else is aligned, that is not mainly a coordination problem. It is more like a conflict of incentives or values.',
+    limits: 'This can mislead when you blame "the system" and ignore real accountability. Sometimes coordination is hard, but sometimes a person still made a poor choice.',
+  },
+  'Survivorship Bias': {
+    nonexample: 'Learning from a successful person is not automatically survivorship bias. It becomes biased when you ignore all the people who tried the same path and failed.',
+    limits: 'This can mislead when it makes you dismiss all success stories. The better move is to ask what hidden failures are missing from the sample.',
+  },
+  'Scarcity Mindset': {
+    nonexample: 'Being careful with money is not automatically scarcity mindset. It becomes scarcity mindset when fear of shortage narrows your thinking and hurts better long-term choices.',
+    limits: 'This can mislead when outsiders judge poor decisions too harshly. Scarcity can reduce mental bandwidth, but it does not remove all responsibility.',
+  },
+  'Availability Heuristic': {
+    nonexample: 'Remembering a vivid example is not automatically availability heuristic. It becomes the heuristic when that vivid example makes you overestimate how common something is.',
+    limits: 'This can mislead when you dismiss emotional stories completely. Vivid examples can reveal real risks, but they should be checked against broader evidence.',
+  },
+}
 
 // ─────────────────────────────────────────────
 //  STATE  (localStorage + server sync)
@@ -1630,10 +1704,55 @@ function getUnderstandingSummary(dd) {
   return [
     u.core && `Core idea: ${u.core}`,
     u.example && `Example: ${u.example}`,
-    u.nonexample && `Non-example: ${u.nonexample}`,
-    u.limits && `Limit or trap: ${u.limits}`,
+    u.nonexample && `What this is not: ${u.nonexample}`,
+    u.limits && `Where this can mislead: ${u.limits}`,
     u.phrase && `Conversation phrase: ${u.phrase}`,
   ].filter(Boolean).join('\n')
+}
+
+function getScaffold(conceptTitle) {
+  return SCAFFOLDS[conceptTitle] || {
+    nonexample: `A similar situation is not automatically ${conceptTitle}. It only fits if the key mechanism of the concept is actually present.`,
+    limits: `${conceptTitle} can mislead when you apply it to every situation instead of checking whether the context really matches.`,
+  }
+}
+
+function renderScaffoldHelpers(conceptTitle) {
+  const scaffold = getScaffold(conceptTitle)
+  const items = [
+    { id: 'nonexample-helper', part: 'nonexample', text: scaffold.nonexample },
+    { id: 'limits-helper', part: 'limits', text: scaffold.limits },
+  ]
+  items.forEach(({ id, part, text }) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    el.innerHTML = ''
+
+    const body = document.createElement('div')
+    body.className = 'micro-helper-text'
+    body.innerHTML = `<strong>Starter:</strong> ${text}`
+
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'mini-btn'
+    btn.textContent = 'Use this starter'
+    btn.onclick = () => fillUnderstandingPart(part, text)
+
+    el.appendChild(body)
+    el.appendChild(btn)
+  })
+}
+
+function fillUnderstandingPart(part, text) {
+  const el = document.getElementById(`understand-${part}`)
+  if (!el) return
+  if (!el.value.trim() || confirm('Replace your current text with this starter?')) {
+    el.value = text
+    const dd = getDayState(S.currentDay)
+    const understanding = ensureUnderstanding(dd)
+    understanding[part] = text
+    persist(S)
+  }
 }
 
 function mkScoreBar(score, containerId) {
@@ -1965,6 +2084,7 @@ function render() {
   document.getElementById('understand-nonexample').value = understanding.nonexample || ''
   document.getElementById('understand-limits').value = understanding.limits || ''
   document.getElementById('understand-phrase').value = understanding.phrase || ''
+  renderScaffoldHelpers(c.t)
   renderTutorQuestion(dd)
 
   // Explanation textarea
@@ -2221,8 +2341,6 @@ async function getTutorQuestion() {
 function fallbackTutorQuestion(concept, dd) {
   const u = ensureUnderstanding(dd)
   if (!u.example) return `Can you give a concrete example of ${concept} from a real decision, not just a definition?`
-  if (!u.nonexample) return `What is one situation that may look like ${concept}, but is actually something else?`
-  if (!u.limits) return `When would applying ${concept} too mechanically lead someone to the wrong conclusion?`
   if (!u.phrase) return `How would you bring up ${concept} in a real conversation without sounding like you are giving a lecture?`
   return `What is the most important distinction someone must understand before they can use ${concept} well?`
 }
