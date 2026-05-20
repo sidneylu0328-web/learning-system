@@ -1328,13 +1328,84 @@ const C = [
 //  STATE  (localStorage + server sync)
 // ─────────────────────────────────────────────
 const KEY = 'sidneys_learning_v3'
+const RESET_ON_VERSION_MISMATCH_DAYS = new Set([0, 1, 2, 3, 4, 5, 6, 7])
 
 // Local helpers (instant, no await needed)
 const loadLocal  = () => { try { return JSON.parse(localStorage.getItem(KEY)||'{}') } catch { return {} } }
 const saveLocal  = s  => { try { localStorage.setItem(KEY, JSON.stringify(s)) } catch {} }
 
+function blankDayState(idx) {
+  return {
+    step: 0,
+    audience: AUDIENCES[idx % AUDIENCES.length],
+    conceptTitle: C[idx]?.t || '',
+    understanding: { core: '', example: '', nonexample: '', limits: '', phrase: '' },
+    tutorQuestion: null,
+    tutorHint: null,
+    explanation: '',
+    connectionAnswer: '',
+    connectionFeedback: null,
+    connectionPerfect: null,
+    score: null,
+    feedback: null,
+    feedbackAt: null,
+    perfectAnswer: null,
+    revision: '',
+    revisionScore: null,
+    revisionFeedback: null,
+    completedAt: null,
+    lastReviewedAt: null,
+    reviewCount: 0,
+    nextReviewDue: null,
+  }
+}
+
+function hasMeaningfulProgress(dd) {
+  if (!dd || typeof dd !== 'object') return false
+  const u = dd.understanding || {}
+  return !!(
+    (dd.step && dd.step > 0) ||
+    dd.explanation ||
+    dd.revision ||
+    dd.feedback ||
+    dd.connectionAnswer ||
+    dd.connectionFeedback ||
+    dd.perfectAnswer ||
+    u.core ||
+    u.example ||
+    u.nonexample ||
+    u.limits ||
+    u.phrase
+  )
+}
+
+function shouldResetDay(idx, dd) {
+  if (!dd || typeof dd !== 'object') return false
+  const currentTitle = C[idx]?.t
+  if (!currentTitle) return false
+  if (dd.conceptTitle && dd.conceptTitle !== currentTitle) return true
+  return RESET_ON_VERSION_MISMATCH_DAYS.has(idx) && !dd.conceptTitle && hasMeaningfulProgress(dd)
+}
+
+function sanitizeState(state) {
+  if (!state || typeof state !== 'object') return {}
+  if (!state.days || typeof state.days !== 'object') return state
+  Object.keys(state.days).forEach(k => {
+    const idx = Number(k)
+    if (!Number.isInteger(idx) || !C[idx]) return
+    if (shouldResetDay(idx, state.days[k])) {
+      state.days[k] = blankDayState(idx)
+    } else if (!state.days[k].conceptTitle) {
+      state.days[k].conceptTitle = C[idx].t
+    }
+  })
+  return state
+}
+
 // Merge: take the copy with the higher currentDay (or more completed days)
 function mergeStates(a, b) {
+  a = sanitizeState(a)
+  b = sanitizeState(b)
   if (!a || typeof a !== 'object') return b || {}
   if (!b || typeof b !== 'object') return a || {}
   const aDay = (a.currentDay ?? -1)
@@ -1344,7 +1415,7 @@ function mergeStates(a, b) {
   const other = aDay >= bDay ? b : a
   // Merge days — keep the more-complete version of each day entry
   const mergedDays = { ...(other.days || {}), ...(base.days || {}) }
-  return { ...base, days: mergedDays }
+  return sanitizeState({ ...base, days: mergedDays })
 }
 
 // Async server sync — fire-and-forget on saves, awaited on load
@@ -1363,7 +1434,7 @@ function persist(s) {
 }
 
 // Boot: load local immediately, then merge with server in background
-let S = loadLocal()
+let S = sanitizeState(loadLocal())
 
 function pushToServer(state) {
   return fetch('/api/progress', {
@@ -1380,7 +1451,7 @@ async function syncFromServer() {
   try {
     const resp = await fetch('/api/progress')
     if (!resp.ok) return
-    const serverState = await resp.json()
+    const serverState = sanitizeState(await resp.json())
     if (!serverState || typeof serverState !== 'object') return
 
     const merged = mergeStates(S, serverState)
@@ -1427,6 +1498,7 @@ if (!S.currentDay && !S.days) {
         S.days[idx] = {
           step: od.completed ? 4 : (od.read ? 1 : 0),
           audience: AUDIENCES[idx % AUDIENCES.length],
+          conceptTitle: C[idx]?.t || '',
           understanding: { core: '', example: '', nonexample: '', limits: '', phrase: '' },
           tutorQuestion: null,
           tutorHint: null,
@@ -1456,25 +1528,14 @@ if (!S.synthesis) S.synthesis = {}
 const todayStr = () => new Date().toISOString().split('T')[0]
 
 function getDayState(idx) {
+  if (shouldResetDay(idx, S.days[idx])) {
+    S.days[idx] = blankDayState(idx)
+    persist(S)
+  }
   if (!S.days[idx]) {
-    S.days[idx] = {
-      step: 0,
-      audience: AUDIENCES[idx % AUDIENCES.length],
-      understanding: { core: '', example: '', nonexample: '', limits: '', phrase: '' },
-      tutorQuestion: null,
-      tutorHint: null,
-      explanation: '',
-      connectionAnswer: '',
-      score: null,
-      feedback: null,
-      revision: '',
-      revisionScore: null,
-      revisionFeedback: null,
-      completedAt: null,
-      lastReviewedAt: null,
-      reviewCount: 0,
-      nextReviewDue: null,
-    }
+    S.days[idx] = blankDayState(idx)
+  } else if (!S.days[idx].conceptTitle) {
+    S.days[idx].conceptTitle = C[idx]?.t || ''
   }
   return S.days[idx]
 }
